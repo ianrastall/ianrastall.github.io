@@ -1,0 +1,29 @@
+---
+import PostList from "../../components/PostList.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCategoryGroups, getPublicPosts } from "../../lib/posts";
+
+export async function getStaticPaths() {
+  const categories = getCategoryGroups(await getPublicPosts());
+
+  return categories.map((category) => ({
+    params: { category: category.slug },
+    props: { category }
+  }));
+}
+
+const { category } = Astro.props;
+---
+
+<BaseLayout
+  title={category.name}
+  description={`Fooliosity posts in ${category.name}.`}
+  canonicalPath={`/categories/${category.slug}/`}
+>
+  <section class="page-heading">
+    <p class="eyebrow">Category</p>
+    <h1>{category.name}</h1>
+  </section>
+
+  <PostList posts={category.posts} />
+</BaseLayout>

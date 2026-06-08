@@ -1,0 +1,26 @@
+---
+import { NAV_ITEMS, SITE } from "../lib/site";
+
+const currentPath = Astro.url.pathname;
+
+function isCurrent(href: string) {
+  return href === "/" ? currentPath === href : currentPath.startsWith(href);
+}
+---
+
+<header class="site-header">
+  <a class="site-brand" href="/" aria-label={`${SITE.name} home`}>
+    <img src="/images/site/fooliosity-mark.svg" alt="" width="40" height="40" />
+    <span>{SITE.name}</span>
+  </a>
+  <nav class="site-nav" aria-label="Primary">
+    {
+      NAV_ITEMS.map((item) => (
+        <a href={item.href} aria-current={isCurrent(item.href) ? "page" : undefined}>
+          {item.label}
+        </a>
+      ))
+    }
+    <a href="/rss.xml">RSS</a>
+  </nav>
+</header>

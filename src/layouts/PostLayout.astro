@@ -1,0 +1,66 @@
+---
+import type { PublicBlogPost } from "../lib/posts";
+import BaseLayout from "./BaseLayout.astro";
+import { formatDate, hasMeaningfulUpdate, normalizeTaxonomy, postUrl } from "../lib/posts";
+
+interface Props {
+  post: PublicBlogPost;
+}
+
+const { post } = Astro.props;
+const categoryHref = `/categories/${normalizeTaxonomy(post.data.category)}/`;
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  image={post.data.heroImage}
+  canonicalPath={postUrl(post)}
+>
+  <article class="post" data-pagefind-body>
+    <header class="post-header">
+      <p class="eyebrow">
+        <a href={categoryHref}>{post.data.category}</a>
+      </p>
+      <h1 data-pagefind-meta="title">{post.data.title}</h1>
+      <p class="dek">{post.data.description}</p>
+      <div class="post-meta">
+        <time datetime={post.data.published.toISOString()}>{formatDate(post.data.published)}</time>
+        {
+          hasMeaningfulUpdate(post) && (
+            <>
+              <span aria-hidden="true">/</span>
+              <span>
+                Updated{" "}
+                <time datetime={post.data.updated?.toISOString()}>
+                  {formatDate(post.data.updated as Date)}
+                </time>
+              </span>
+            </>
+          )
+        }
+      </div>
+      {
+        post.data.tags.length > 0 && (
+          <ul class="tag-list" aria-label="Post tags">
+            {post.data.tags.map((tag) => (
+              <li>
+                <a href={`/tags/${normalizeTaxonomy(tag)}/`}>{tag}</a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+      {
+        post.data.heroImage && (
+          <figure class="hero-image">
+            <img src={post.data.heroImage} alt="" loading="eager" decoding="async" />
+          </figure>
+        )
+      }
+    </header>
+    <div class="article-content">
+      <slot />
+    </div>
+  </article>
+</BaseLayout>

@@ -1,0 +1,12 @@
+---
+import { SITE } from "../lib/site";
+---
+
+<footer class="site-footer">
+  <p>&copy; {new Date().getFullYear()} {SITE.author}. Built as a static Astro site.</p>
+  <p>
+    <a href="/rss.xml">RSS</a>
+    <span aria-hidden="true">/</span>
+    <a href="/archive/">Archive</a>
+  </p>
+</footer>

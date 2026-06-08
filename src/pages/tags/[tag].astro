@@ -1,0 +1,29 @@
+---
+import PostList from "../../components/PostList.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublicPosts, getTagGroups } from "../../lib/posts";
+
+export async function getStaticPaths() {
+  const tags = getTagGroups(await getPublicPosts());
+
+  return tags.map((tag) => ({
+    params: { tag: tag.slug },
+    props: { tag }
+  }));
+}
+
+const { tag } = Astro.props;
+---
+
+<BaseLayout
+  title={tag.name}
+  description={`Fooliosity posts tagged ${tag.name}.`}
+  canonicalPath={`/tags/${tag.slug}/`}
+>
+  <section class="page-heading">
+    <p class="eyebrow">Tag</p>
+    <h1>{tag.name}</h1>
+  </section>
+
+  <PostList posts={tag.posts} />
+</BaseLayout>

@@ -20,17 +20,21 @@ The website should therefore be designed as a stable static publishing target wh
 
 ## 2. Current repository state
 
-At the time of this handoff, the website itself has **not yet been scaffolded**.
+The initial Astro website scaffold has been implemented.
 
-The repository currently contains documentation establishing:
+Current notable pieces:
 
-- the site name, Fooliosity;
-- the public address;
-- the intended Astro/Markdown/GitHub Pages stack;
-- the separation from BlogCreator and MDEdit;
-- Codex instructions and this handoff.
+- Astro 6 static site configuration in `astro.config.mjs`;
+- content collection configuration in `src/content.config.ts`;
+- BlogCreator-compatible Markdown posts under `src/content/blog/`;
+- one replaceable sample post;
+- home, post, archive, category, tag, search, about, RSS, sitemap, and 404 routes;
+- dark-first responsive styling in `src/styles/global.css`;
+- Pagefind static search generated after the Astro build;
+- GitHub Pages deployment workflow in `.github/workflows/deploy.yml`;
+- README setup and publishing notes.
 
-Do not assume an Astro project, package manifest, content collection, layout, theme, workflow, or published page already exists. The first implementation milestone is to create them.
+Remote GitHub Actions deployment still needs to run after this branch is merged to `main`.
 
 ## 3. Repository boundaries
 
@@ -114,8 +118,8 @@ public/
     posts/
 src/
   components/
+  content.config.ts
   content/
-    config.ts
     blog/
   layouts/
     BaseLayout.astro
@@ -125,13 +129,16 @@ src/
     about.astro
     archive.astro
     404.astro
+    search.astro
     posts/
       [...slug].astro
     categories/
+      index.astro
       [category].astro
     tags/
+      index.astro
       [tag].astro
-    rss.xml.js
+    rss.xml.ts
   styles/
     global.css
     article.css
@@ -184,9 +191,9 @@ public/images/posts/what-blade-runner-is-remembering/diagram-01.webp
 
 Keep this contract stable once BlogCreator begins writing files.
 
-## 8. Proposed front matter contract
+## 8. Current front matter contract
 
-This schema must be coordinated with `ianrastall/BlogCreator/CODEX_HANDOFF.md` before being treated as final.
+This schema has been coordinated with `ianrastall/BlogCreator/CODEX_HANDOFF.md` and is implemented in `src/content.config.ts`.
 
 Recommended post file:
 
@@ -233,6 +240,8 @@ Schema guidance:
 - Draft posts must not appear in production pages, RSS, sitemap, search, tag pages, or category pages.
 - `updated` should not be changed for inconsequential build or formatting operations.
 - Avoid duplicate fields representing the same concept.
+- Future-dated posts are treated as not yet public until the build date reaches `published`.
+- `heroImage`, when present, must point to an existing file under `public/images/posts/`.
 
 Astro's content schema should validate this contract and provide actionable build errors.
 
@@ -464,9 +473,15 @@ The user may need to select **GitHub Actions** as the Pages source once through 
 
 ## 17. Local development commands
 
-After Astro is scaffolded, README and this file must be updated with exact versions and commands.
+Current runtime:
 
-Expected pattern:
+```text
+Node.js: 24.x
+npm: 11.x
+Astro: 6.4.4
+```
+
+Current commands:
 
 ```powershell
 npm install
@@ -475,19 +490,19 @@ npm run build
 npm run preview
 ```
 
-Prefer `npm ci` in CI once a lockfile exists.
+Use `npm ci` in CI. A lockfile is committed.
 
-Recommended scripts:
+Current scripts:
 
 ```json
 {
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build",
-    "preview": "astro preview",
-    "check": "astro check",
-    "test": "...",
-    "format": "..."
+    "check": "npm run validate:content && astro check",
+    "validate:content": "node scripts/validate-content.mjs",
+    "build": "npm run check && astro build && npm run pagefind",
+    "pagefind": "pagefind --site dist --output-subdir pagefind",
+    "preview": "astro preview"
   }
 }
 ```
@@ -569,7 +584,7 @@ The Astro build itself is a required integration test.
 
 ## 23. Search direction
 
-Pagefind is a likely fit because it produces a static search index after build.
+Pagefind is installed and generates a static index after `astro build`.
 
 Requirements:
 
@@ -581,7 +596,7 @@ Requirements:
 - index only meaningful page content;
 - integrate after core pages and content contract are stable.
 
-Do not let search block the initial publishable scaffold.
+The current search page uses Pagefind's default supported UI and indexes pages marked with `data-pagefind-body`.
 
 ## 24. Comments direction
 
@@ -636,7 +651,7 @@ Avoid combining the initial scaffold with speculative comments, analytics, custo
 
 ## 28. First implementation milestone
 
-The first Codex task should create a complete minimal site—not merely install Astro.
+The first local implementation milestone is complete in the scaffold branch. It created a complete minimal site, not merely an Astro install.
 
 Required outcome:
 
@@ -662,7 +677,7 @@ The sample post should be obviously replaceable and should not invent personal c
 
 ## 29. Definition of done for the first milestone
 
-The website scaffold is complete only when:
+The website scaffold is complete locally when:
 
 - `npm ci` or the documented install command succeeds;
 - `npm run build` succeeds;
@@ -672,8 +687,8 @@ The website scaffold is complete only when:
 - RSS and sitemap are generated;
 - navigation works without a client framework;
 - mobile and desktop layouts are usable;
-- GitHub Actions deploys successfully;
-- the Pages site is accessible at `https://ianrastall.github.io`;
+- GitHub Actions deploys successfully after merge to `main`;
+- the Pages site is accessible at `https://ianrastall.github.io` after deployment;
 - README contains exact setup and troubleshooting steps;
 - BlogCreator's handoff is updated if the final post contract differs from the proposal.
 

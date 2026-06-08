@@ -1,0 +1,26 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCategoryGroups, getPublicPosts } from "../../lib/posts";
+
+const categories = getCategoryGroups(await getPublicPosts());
+---
+
+<BaseLayout title="Categories" description="Browse Fooliosity posts by category." canonicalPath="/categories/">
+  <section class="page-heading">
+    <p class="eyebrow">Categories</p>
+    <h1>Categories</h1>
+  </section>
+
+  <ol class="taxonomy-index">
+    {
+      categories.map((category) => (
+        <li>
+          <a href={`/categories/${category.slug}/`}>
+            <span>{category.name}</span>
+            <small>{category.count}</small>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</BaseLayout>

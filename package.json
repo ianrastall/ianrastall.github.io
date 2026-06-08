@@ -1,0 +1,35 @@
+{
+  "name": "fooliosity-site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "overrides": {
+    "yaml-language-server": {
+      "yaml": "2.9.0"
+    }
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "check": "npm run validate:content && astro check",
+    "validate:content": "node scripts/validate-content.mjs",
+    "build": "npm run check && astro build && npm run pagefind",
+    "pagefind": "pagefind --site dist --output-subdir pagefind",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/rss": "4.0.18",
+    "@astrojs/sitemap": "3.7.3",
+    "astro": "6.4.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.9",
+    "@types/node": "25.9.2",
+    "pagefind": "1.5.2",
+    "typescript": "6.0.3",
+    "yaml": "2.9.0",
+    "zod": "4.4.3"
+  }
+}

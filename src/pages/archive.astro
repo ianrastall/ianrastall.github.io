@@ -1,0 +1,31 @@
+---
+import PostList from "../components/PostList.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getEditorialYear, getPublicPosts } from "../lib/posts";
+
+const posts = await getPublicPosts();
+const postsByYear = new Map<string, typeof posts>();
+
+for (const post of posts) {
+  const year = getEditorialYear(post.data.published);
+  postsByYear.set(year, [...(postsByYear.get(year) ?? []), post]);
+}
+---
+
+<BaseLayout title="Archive" description="All published Fooliosity posts." canonicalPath="/archive/">
+  <section class="page-heading">
+    <p class="eyebrow">Archive</p>
+    <h1>All Posts</h1>
+  </section>
+
+  {
+    [...postsByYear.entries()].map(([year, yearPosts]) => (
+      <section class="content-section" aria-labelledby={`year-${year}`}>
+        <div class="section-heading">
+          <h2 id={`year-${year}`}>{year}</h2>
+        </div>
+        <PostList posts={yearPosts} />
+      </section>
+    ))
+  }
+</BaseLayout>

@@ -1,0 +1,26 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublicPosts, getTagGroups } from "../../lib/posts";
+
+const tags = getTagGroups(await getPublicPosts());
+---
+
+<BaseLayout title="Tags" description="Browse Fooliosity posts by tag." canonicalPath="/tags/">
+  <section class="page-heading">
+    <p class="eyebrow">Tags</p>
+    <h1>Tags</h1>
+  </section>
+
+  <ol class="taxonomy-index taxonomy-index--compact">
+    {
+      tags.map((tag) => (
+        <li>
+          <a href={`/tags/${tag.slug}/`}>
+            <span>{tag.name}</span>
+            <small>{tag.count}</small>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</BaseLayout>
