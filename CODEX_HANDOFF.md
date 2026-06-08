@@ -207,6 +207,8 @@ tags:
 draft: false
 featured: false
 heroImage: "/images/posts/what-blade-runner-is-actually-remembering/hero.webp"
+heroAlt: "Description of the hero image."
+heroCaption: "Optional caption shown below the hero image."
 aiAssisted: false
 aiDisclosure: "This post was drafted with AI assistance and reviewed before publication."
 ---
@@ -228,6 +230,8 @@ Recommended field semantics:
 | `draft` | yes | Exclude from production output when true |
 | `featured` | no | Allow selected prominence on the home page |
 | `heroImage` | no | Root-relative path under `public` |
+| `heroAlt` | no | Alt text for a meaningful hero image |
+| `heroCaption` | no | Optional visible caption for the hero image |
 | `aiAssisted` | no | Show a visible editorial AI disclosure when true |
 | `aiDisclosure` | no | Per-post wording for the AI disclosure note |
 
@@ -240,6 +244,7 @@ Schema guidance:
 - Draft posts must not appear in production pages, RSS, sitemap, search, tag pages, or category pages.
 - `updated` should not be changed for inconsequential build or formatting operations.
 - Avoid duplicate fields representing the same concept.
+- `heroAlt` and `heroCaption` should only be present when `heroImage` is present.
 - `aiDisclosure` should only be present when `aiAssisted` is true.
 
 Astro's content schema should validate this contract and provide actionable build errors.

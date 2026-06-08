@@ -24,6 +24,8 @@ const blog = defineCollection({
       draft: z.boolean().default(true),
       featured: z.boolean().default(false),
       heroImage: z.string().regex(/^\/images\/posts\/.+/).optional(),
+      heroAlt: z.string().min(1).max(220).optional(),
+      heroCaption: z.string().min(1).max(240).optional(),
       aiAssisted: z.boolean().default(false),
       aiDisclosure: z.string().min(1).max(280).optional()
     })
@@ -41,6 +43,14 @@ const blog = defineCollection({
           code: "custom",
           path: ["aiDisclosure"],
           message: "aiDisclosure should only be present when aiAssisted is true."
+        });
+      }
+
+      if ((data.heroAlt || data.heroCaption) && !data.heroImage) {
+        context.addIssue({
+          code: "custom",
+          path: ["heroImage"],
+          message: "heroAlt and heroCaption require heroImage."
         });
       }
     })

@@ -19,6 +19,8 @@ npm run preview
 
 ## Publishing
 
+This repository uses a one-branch workflow: commit directly to `main`, then push.
+
 Commit source files, Markdown posts, assets under `public/`, `package.json`, and `package-lock.json`.
 
 Do not commit:
@@ -54,12 +56,14 @@ tags:
 draft: false
 featured: false
 heroImage: "/images/posts/example-title/hero.webp"
+heroAlt: "Description of the image."
+heroCaption: "Optional caption shown below the image."
 aiAssisted: true
 aiDisclosure: "This post was drafted with AI assistance and reviewed before publication."
 ---
 ```
 
-`updated`, `heroImage`, `aiAssisted`, and `aiDisclosure` are optional. If `aiAssisted` is true, the post displays an editorial disclosure.
+`updated`, `heroImage`, `heroAlt`, `heroCaption`, `aiAssisted`, and `aiDisclosure` are optional. If `aiAssisted` is true, the post displays an editorial disclosure.
 
 Related repositories:
 

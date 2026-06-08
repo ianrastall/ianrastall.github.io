@@ -59,7 +59,8 @@ const updatedIsLater = post.data.updated && post.data.updated > post.data.publis
       {
         post.data.heroImage && (
           <figure class="hero-image">
-            <img src={post.data.heroImage} alt="" />
+            <img src={post.data.heroImage} alt={post.data.heroAlt ?? ""} />
+            {post.data.heroCaption && <figcaption>{post.data.heroCaption}</figcaption>}
           </figure>
         )
       }
