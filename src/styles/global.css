@@ -10,9 +10,9 @@
   --accent-strong: #d8b47d;
   --code-bg: #0d1117;
   --focus: #f1c36d;
-  --measure: 68ch;
-  --wide: 1280px;
-  --outer-margin: 96px;
+  --measure: 86ch;
+  --wide: 1480px;
+  --outer-margin: 64px;
 }
 
 @media (prefers-color-scheme: light) {
@@ -160,7 +160,7 @@ svg {
 }
 
 .home-hero__copy h1 {
-  font-size: clamp(2.6rem, 7vw, 4.75rem);
+  font-size: clamp(2.25rem, 6vw, 3.8rem);
 }
 
 .home-hero__copy p:not(.eyebrow) {
@@ -272,7 +272,7 @@ svg {
 
 .post-list__item h2 {
   margin: 6px 0 8px;
-  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-size: clamp(1.2rem, 2.4vw, 1.5rem);
   line-height: 1.18;
 }
 
@@ -314,7 +314,7 @@ svg {
 .feed-post__header h2 {
   margin: 0;
   overflow-wrap: anywhere;
-  font-size: clamp(1.9rem, 4vw, 2.75rem);
+  font-size: clamp(1.55rem, 3vw, 2.15rem);
   line-height: 1.1;
 }
 
@@ -380,7 +380,7 @@ svg {
 
 .page-heading h1,
 .page-prose h1 {
-  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-size: clamp(1.75rem, 4vw, 2.55rem);
 }
 
 .page-prose {
@@ -402,7 +402,7 @@ svg {
 
 .post-header h1 {
   overflow-wrap: anywhere;
-  font-size: clamp(2.05rem, 5vw, 3.45rem);
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
   line-height: 1.08;
 }
 
@@ -471,11 +471,11 @@ svg {
 }
 
 .article-content h2 {
-  font-size: 1.55rem;
+  font-size: 1.35rem;
 }
 
 .article-content h3 {
-  font-size: 1.28rem;
+  font-size: 1.15rem;
 }
 
 .article-content p,
@@ -681,7 +681,7 @@ svg {
   }
 
   .post-header h1 {
-    font-size: clamp(1.9rem, 9vw, 2.75rem);
+    font-size: clamp(1.65rem, 7vw, 2.25rem);
   }
 
   .feed {
@@ -693,7 +693,7 @@ svg {
   }
 
   .feed-post__header h2 {
-    font-size: clamp(1.65rem, 8vw, 2.35rem);
+    font-size: clamp(1.4rem, 6.5vw, 1.95rem);
   }
 
   .pagination {

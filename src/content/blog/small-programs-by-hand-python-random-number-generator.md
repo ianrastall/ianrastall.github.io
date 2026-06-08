@@ -1,6 +1,6 @@
 ---
 title: "Small Programs by Hand: A Python Random Number Generator GUI"
-description: "The first entry in a series on learning programming languages by writing tiny useful programs by hand, beginning with a Python Tkinter GUI."
+description: "The first entry in a series on learning programming languages by writing tiny useful programs by hand, beginning with Python console input and a Tkinter GUI."
 published: "2026-06-07T19:45:00-05:00"
 slug: "small-programs-by-hand-python-random-number-generator"
 category: "Programming"
@@ -17,45 +17,131 @@ aiDisclosure: "This post was drafted with AI assistance and reviewed before publ
 
 This is the first post in a small experiment: learn programming languages by writing tiny programs by hand.
 
-Not by assembling a whole application framework first. Not by asking an AI to produce a finished thing. Just by opening VS Code, making one source file, typing the code, running it, and understanding what each line is doing.
+Not by assembling a whole application framework first. Not by asking an AI to produce a finished thing. Just by opening VS Code, making one small program, running it, and understanding what each line is doing.
 
-The program for this first round is a random number generator GUI. It is small enough to fit in one file, but it still teaches useful ideas:
+The shared program for the series is a random number generator. Each language version now has the same shape:
 
-- importing a library
-- creating a window
-- placing labels, text boxes, and buttons
-- converting text into numbers
-- handling invalid input
-- connecting a button click to a function
-- running a graphical program
+- the core technologies involved
+- a console or text version
+- a GUI or graphical version
 
-The first language is Python.
+That gives the series a useful rhythm. First we learn how the language thinks. Then we make the same idea visible on the screen.
 
-## The Goal
+## The Core Technologies
 
-The finished program should let me type a minimum and maximum number, press a button, and see a random number in that range.
+Python is an interpreted, high-level language. For a tiny program, that means the setup is wonderfully direct: write a `.py` file, run it with Python, and read the result.
 
-That is all. The smallness is the point.
+This post uses two pieces of Python's standard library:
 
-Small programs make the mechanics visible. There is nowhere for the basic ideas to hide.
+- `random`, for generating pseudo-random numbers
+- `tkinter`, for building a small desktop GUI
 
-## Create the File
+The console version uses `input()` to read text from the terminal and `print()` to write text back.
 
-In VS Code, create a folder for the project. Mine would be something like this:
+The GUI version uses Tkinter widgets:
+
+- `Tk`, the main application window
+- `Label`, visible text
+- `Entry`, a one-line text box
+- `Button`, a clickable button
+- `messagebox`, a simple pop-up error dialog
+
+Python is a gentle first stop because both versions can fit in one file without adding dependencies.
+
+## The Console Version
+
+Create a folder:
 
 ```text
-small-python-random-gui
+small-python-random-console
 ```
 
 Inside that folder, create one file:
 
 ```text
-random_gui.py
+random_console.py
 ```
 
-Python filenames usually use lowercase letters and underscores. The `.py` extension tells Python and VS Code that this is a Python source file.
+Here is the complete program:
 
-## The Whole Program
+```python
+import random
+
+
+def read_whole_number(prompt):
+    while True:
+        text = input(prompt)
+
+        try:
+            return int(text)
+        except ValueError:
+            print("Please enter a whole number.")
+
+
+minimum = read_whole_number("Minimum: ")
+maximum = read_whole_number("Maximum: ")
+
+if minimum > maximum:
+    print("Minimum must be less than or equal to maximum.")
+else:
+    number = random.randint(minimum, maximum)
+    print(f"Random number: {number}")
+```
+
+Run it from the VS Code terminal:
+
+```powershell
+python random_console.py
+```
+
+On Windows, this may also work:
+
+```powershell
+py random_console.py
+```
+
+The helper function keeps asking until the user gives a whole number:
+
+```python
+def read_whole_number(prompt):
+    while True:
+        text = input(prompt)
+```
+
+`input(prompt)` prints the prompt and waits for the user to type a line.
+
+The conversion happens here:
+
+```python
+return int(text)
+```
+
+If the user types `12`, `int(text)` returns the integer `12`.
+
+If the user types `cat`, Python raises a `ValueError`. The `except` block catches that mistake and lets the loop continue:
+
+```python
+except ValueError:
+    print("Please enter a whole number.")
+```
+
+Once the program has two numbers, the random part is only one line:
+
+```python
+number = random.randint(minimum, maximum)
+```
+
+`randint` includes both ends of the range, so `random.randint(1, 100)` can return `1` or `100`.
+
+## The GUI Version
+
+Now make the same idea visible.
+
+Create another file:
+
+```text
+random_gui.py
+```
 
 Here is the complete program:
 
@@ -108,104 +194,21 @@ result_label.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
 window.mainloop()
 ```
 
-Run it from the VS Code terminal:
+Run it:
 
 ```powershell
 python random_gui.py
 ```
 
-On Windows, this may also work:
-
-```powershell
-py random_gui.py
-```
-
-If everything is set up correctly, a small window appears with two boxes, a button, and a result label.
-
-## What the Imports Mean
-
-The first three lines bring in code that Python already knows how to use:
-
-```python
-import random
-import tkinter as tk
-from tkinter import messagebox
-```
-
-`random` is Python's standard random-number module. We use it for `random.randint()`.
-
-`tkinter` is Python's standard GUI toolkit. The `as tk` part gives it a short nickname, so we can write `tk.Label` instead of `tkinter.Label`.
-
-`messagebox` gives us simple pop-up error messages.
-
-## The Button Function
-
-This function runs whenever the button is clicked:
-
-```python
-def generate_number():
-    try:
-        minimum = int(minimum_entry.get())
-        maximum = int(maximum_entry.get())
-    except ValueError:
-        messagebox.showerror("Invalid input", "Please enter whole numbers.")
-        return
-```
-
-`minimum_entry.get()` reads the text from the first input box. That text is still text, even if it looks like a number, so `int(...)` converts it into an integer.
-
-If the user types `cat` instead of `12`, Python cannot convert it. That raises a `ValueError`. The `try` and `except` block catches that mistake and shows an error instead of crashing the program.
-
-Then the program checks that the range makes sense:
-
-```python
-if minimum > maximum:
-    messagebox.showerror("Invalid range", "Minimum must be less than or equal to maximum.")
-    return
-```
-
-After that, the useful part is only two lines:
-
-```python
-number = random.randint(minimum, maximum)
-result_label.config(text=f"Random number: {number}")
-```
-
-`random.randint(minimum, maximum)` chooses a whole number in the range. The `.config(...)` call changes the label on the screen.
-
-## Building the Window
-
-This line creates the main application window:
+The window begins here:
 
 ```python
 window = tk.Tk()
 ```
 
-Then we give it a title:
-
-```python
-window.title("Random Number Generator")
-```
-
-The labels, entry boxes, and button are called widgets. Each widget is created first, then placed in the window with `.grid(...)`.
+The visible pieces are widgets. Each widget is created, then placed with `.grid(...)`.
 
 For example:
-
-```python
-minimum_label = tk.Label(window, text="Minimum")
-minimum_label.grid(row=0, column=0, padx=10, pady=10, sticky="e")
-```
-
-That says:
-
-- make a label
-- put it in the window
-- set its visible text to `Minimum`
-- place it in row `0`, column `0`
-- add a little padding around it
-- align it to the east side of its grid cell
-
-The input box next to it is similar:
 
 ```python
 minimum_entry = tk.Entry(window, width=12)
@@ -213,49 +216,41 @@ minimum_entry.grid(row=0, column=1, padx=10, pady=10)
 minimum_entry.insert(0, "1")
 ```
 
-`insert(0, "1")` puts the default value `1` into the box.
+That creates a text box, places it in row `0`, column `1`, and puts the default value `1` inside it.
 
-## Connecting the Button
-
-This line is one of the most important:
+The most important GUI line is the button:
 
 ```python
 generate_button = tk.Button(window, text="Generate", command=generate_number)
 ```
 
-The button says `Generate`. The `command=generate_number` part tells Tkinter what function to run when the button is clicked.
+`command=generate_number` tells Tkinter which function to run when the button is clicked.
 
-Notice that it is not written as `generate_number()`. The parentheses would run the function immediately. Without parentheses, we are handing the function to Tkinter so Tkinter can call it later.
+Notice that it is not `generate_number()`. Parentheses would call the function immediately. Without parentheses, we hand the function to Tkinter so Tkinter can call it later.
 
-That distinction matters in many programming languages: sometimes you call a function now, and sometimes you pass the function around so something else can call it later.
-
-## Starting the Program
-
-The final line starts the GUI event loop:
+Finally, this line starts the event loop:
 
 ```python
 window.mainloop()
 ```
 
-That loop waits for events: clicks, typing, window movement, closing the window. Without `mainloop()`, the program would create the window and immediately exit.
+The event loop waits for clicks, typing, redraws, and the close button. A GUI program is not a straight line in the same way the console version is. It mostly waits, then reacts.
 
-## What This Teaches
+## The Shape Of The Lesson
 
-This tiny program is not impressive as software. That is fine. It is useful as a learning object.
+The console version shows Python's basic flow: read text, convert it, validate it, print a result.
 
-It teaches how Python names things, how functions work, how text becomes numbers, how errors are handled, how GUI widgets are created, and how a button triggers code.
+The GUI version keeps the same logic but moves the input and output into widgets. The program is no longer only about values. It is also about events.
+
+That is the first big lesson of the series: the language matters, but so does the surface where the program lives.
 
 The same program can now be rewritten in other languages:
 
-- C#
-- C++
 - C
+- C++
+- D
+- C#
 - JavaScript
-- Java
-- maybe more
+- Rust
 
 The goal is not to memorize every library. The goal is to see the same small idea through different languages until the similarities and differences become obvious.
-
-Python starts gently. That makes it a good first language for the series.
-
-The next step is to make the same small thing somewhere less forgiving.

@@ -12,6 +12,8 @@ export function normalizeTaxonomy(value: string): string {
     .trim()
     .toLowerCase()
     .replace(/&/g, " and ")
+    .replace(/\+/g, " plus ")
+    .replace(/#/g, " sharp ")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
