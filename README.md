@@ -32,6 +32,10 @@ Do not commit:
 
 Those are ignored because GitHub Actions rebuilds them.
 
+## Front Page
+
+The home page is a full-content blog feed, not a summary page. It renders the newest 15 published posts directly on `/`. Older posts paginate under `/page/2/`, `/page/3/`, and so on.
+
 After the first workflow run, GitHub Pages may need to be set once to use Actions:
 
 1. Open the repository on GitHub.

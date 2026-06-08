@@ -284,8 +284,8 @@ The first complete site should include:
 ### Home page
 
 - Site name and short description.
-- Recent posts.
-- Optional featured posts.
+- Full-content feed of the newest 15 published posts.
+- Pagination for older posts at `/page/<number>/`.
 - Clear access to archive, categories, tags, about, RSS, and search.
 
 ### Post page

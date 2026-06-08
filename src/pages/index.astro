@@ -1,11 +1,12 @@
 ---
-import PostList from "../components/PostList.astro";
+import FeedPagination from "../components/FeedPagination.astro";
+import PostFeed from "../components/PostFeed.astro";
 import { site } from "../data/site";
-import { getFeaturedPosts, getRecentPosts } from "../lib/posts";
+import { getPublishedPosts } from "../lib/posts";
+import { getFeedPage } from "../lib/pagination";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
-const featuredPosts = await getFeaturedPosts();
-const recentPosts = await getRecentPosts();
+const feed = getFeedPage(await getPublishedPosts(), 1);
 ---
 
 <BaseLayout title={site.name} description={site.description} canonicalPath="/">
@@ -13,31 +14,17 @@ const recentPosts = await getRecentPosts();
     <div class="home-hero__copy">
       <p class="eyebrow">Public notebook and publication site</p>
       <h1>{site.name}</h1>
-      <p>A static home for long-form essays, notes, analysis, and project writing.</p>
-      <div class="hero-actions">
-        <a class="button" href="/archive/">Read the archive</a>
-        <a class="button button--quiet" href="/rss.xml">RSS feed</a>
-      </div>
+      <p>Long-form essays, notes, analysis, and project writing.</p>
     </div>
     <img class="home-hero__mark" src="/images/site/fooliosity-mark.svg" alt="" width="180" height="180" />
   </section>
 
-  {
-    featuredPosts.length > 0 && (
-      <section class="content-section" aria-labelledby="featured-posts">
-        <div class="section-heading">
-          <h2 id="featured-posts">Featured</h2>
-        </div>
-        <PostList posts={featuredPosts} />
-      </section>
-    )
-  }
-
-  <section class="content-section" aria-labelledby="recent-posts">
+  <section class="content-section feed-section" aria-labelledby="latest-posts">
     <div class="section-heading">
-      <h2 id="recent-posts">Recent Posts</h2>
+      <h2 id="latest-posts">Latest</h2>
       <a href="/archive/">Archive</a>
     </div>
-    <PostList posts={recentPosts} />
+    <PostFeed posts={feed.posts} />
+    <FeedPagination currentPage={feed.currentPage} totalPages={feed.totalPages} />
   </section>
 </BaseLayout>
