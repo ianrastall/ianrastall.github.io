@@ -1,0 +1,29 @@
+---
+import { getPublishedPosts, groupByTag } from "../../lib/posts";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const groups = groupByTag(await getPublishedPosts());
+---
+
+<BaseLayout title="Tags" description="Browse Fooliosity posts by tag." canonicalPath="/tags/" current="tags">
+  <section class="page-heading">
+    <p class="eyebrow">Tags</p>
+    <h1>Tags</h1>
+  </section>
+  {
+    groups.length > 0 ? (
+      <ul class="taxonomy-index taxonomy-index--compact">
+        {groups.map((group) => (
+          <li>
+            <a href={`/tags/${group.slug}/`}>
+              <span>{group.name}</span>
+              <small>{group.posts.length}</small>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="empty-state">No tags yet.</p>
+    )
+  }
+</BaseLayout>

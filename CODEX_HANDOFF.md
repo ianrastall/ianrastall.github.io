@@ -20,17 +20,20 @@ The website should therefore be designed as a stable static publishing target wh
 
 ## 2. Current repository state
 
-At the time of this handoff, the website itself has **not yet been scaffolded**.
+The initial Astro source scaffold now exists.
 
-The repository currently contains documentation establishing:
+The repository contains:
 
-- the site name, Fooliosity;
-- the public address;
-- the intended Astro/Markdown/GitHub Pages stack;
-- the separation from BlogCreator and MDEdit;
-- Codex instructions and this handoff.
+- Astro configuration and package manifests;
+- `src/content.config.ts` using the Astro 6 content loader API;
+- Markdown posts under `src/content/blog/`;
+- core pages for home, posts, archive, categories, tags, search, about, RSS, sitemap, and 404;
+- dark-first responsive styling;
+- an official GitHub Pages deployment workflow;
+- a Pagefind build step for static search;
+- a sample first post: `small-programs-by-hand-python-random-number-generator.md`.
 
-Do not assume an Astro project, package manifest, content collection, layout, theme, workflow, or published page already exists. The first implementation milestone is to create them.
+Generated folders such as `node_modules/`, `dist/`, and `.astro/` are intentionally ignored and should not be committed.
 
 ## 3. Repository boundaries
 
@@ -204,6 +207,8 @@ tags:
 draft: false
 featured: false
 heroImage: "/images/posts/what-blade-runner-is-actually-remembering/hero.webp"
+aiAssisted: false
+aiDisclosure: "This post was drafted with AI assistance and reviewed before publication."
 ---
 
 Article body begins here.
@@ -223,6 +228,8 @@ Recommended field semantics:
 | `draft` | yes | Exclude from production output when true |
 | `featured` | no | Allow selected prominence on the home page |
 | `heroImage` | no | Root-relative path under `public` |
+| `aiAssisted` | no | Show a visible editorial AI disclosure when true |
+| `aiDisclosure` | no | Per-post wording for the AI disclosure note |
 
 Schema guidance:
 
@@ -233,6 +240,7 @@ Schema guidance:
 - Draft posts must not appear in production pages, RSS, sitemap, search, tag pages, or category pages.
 - `updated` should not be changed for inconsequential build or formatting operations.
 - Avoid duplicate fields representing the same concept.
+- `aiDisclosure` should only be present when `aiAssisted` is true.
 
 Astro's content schema should validate this contract and provide actionable build errors.
 
@@ -464,9 +472,7 @@ The user may need to select **GitHub Actions** as the Pages source once through 
 
 ## 17. Local development commands
 
-After Astro is scaffolded, README and this file must be updated with exact versions and commands.
-
-Expected pattern:
+Current local command pattern:
 
 ```powershell
 npm install
@@ -482,12 +488,10 @@ Recommended scripts:
 ```json
 {
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro check && astro build",
-    "preview": "astro preview",
-    "check": "astro check",
-    "test": "...",
-    "format": "..."
+    "dev": "astro dev --host 127.0.0.1",
+    "build": "astro check && astro build && pagefind --site dist",
+    "preview": "astro preview --host 127.0.0.1",
+    "check": "astro check"
   }
 }
 ```

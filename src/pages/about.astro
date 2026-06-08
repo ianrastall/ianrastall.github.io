@@ -1,0 +1,20 @@
+---
+import { site } from "../data/site";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="About" description="About Fooliosity." canonicalPath="/about/" current="about">
+  <article class="page-prose" data-pagefind-body>
+    <p class="eyebrow">About</p>
+    <h1>About Fooliosity</h1>
+    <p>
+      This page is reserved for the finished author and site description. It is intentionally minimal until Ian replaces it with his own wording.
+    </p>
+    <p>
+      Fooliosity is set up as a static publication site. Posts live as Markdown files in
+      <code>src/content/blog/</code> so BlogCreator can eventually write and publish them.
+    </p>
+    <h2>AI Assistance</h2>
+    <p>{site.aiDisclosure}</p>
+  </article>
+</BaseLayout>

@@ -1,0 +1,85 @@
+---
+import { site } from "../data/site";
+import "../styles/global.css";
+
+type NavKey = "archive" | "categories" | "tags" | "search" | "about";
+
+type Props = {
+  title?: string;
+  description?: string;
+  canonicalPath?: string;
+  current?: NavKey;
+};
+
+const {
+  title = site.defaultTitle,
+  description = site.description,
+  canonicalPath = Astro.url.pathname,
+  current
+} = Astro.props;
+
+const pageTitle = title === site.name ? site.name : `${title} | ${site.name}`;
+const canonicalUrl = new URL(canonicalPath, site.url).toString();
+const year = new Date().getFullYear();
+
+const navItems: { key: NavKey; label: string; href: string }[] = [
+  { key: "archive", label: "Archive", href: "/archive/" },
+  { key: "categories", label: "Categories", href: "/categories/" },
+  { key: "tags", label: "Tags", href: "/tags/" },
+  { key: "search", label: "Search", href: "/search/" },
+  { key: "about", label: "About", href: "/about/" }
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${site.name} RSS`} href="/rss.xml" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#111513" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f3ed" media="(prefers-color-scheme: light)" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="site-brand" href="/" aria-label={`${site.name} home`}>
+          <img src="/images/site/fooliosity-mark.svg" alt="" width="40" height="40" />
+          <span>{site.name}</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary">
+          {
+            navItems.map((item) => (
+              <a href={item.href} aria-current={current === item.key ? "page" : undefined}>
+                {item.label}
+              </a>
+            ))
+          }
+          <a href="/rss.xml">RSS</a>
+        </nav>
+      </header>
+      <main id="main-content">
+        <slot />
+      </main>
+      <footer class="site-footer">
+        <p>&copy; {year} {site.author}. Built as a static Astro site.</p>
+        <p class="site-footer__note">AI assistance is disclosed on individual posts when used.</p>
+        <p>
+          <a href="/rss.xml">RSS</a>
+          <span aria-hidden="true">/</span>
+          <a href="/archive/">Archive</a>
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>

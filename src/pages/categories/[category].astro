@@ -1,0 +1,28 @@
+---
+import PostList from "../../components/PostList.astro";
+import { getPublishedPosts, groupByCategory } from "../../lib/posts";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export async function getStaticPaths() {
+  const groups = groupByCategory(await getPublishedPosts());
+  return groups.map((group) => ({
+    params: { category: group.slug },
+    props: { group }
+  }));
+}
+
+const { group } = Astro.props;
+---
+
+<BaseLayout
+  title={group.name}
+  description={`Published Fooliosity posts in ${group.name}.`}
+  canonicalPath={`/categories/${group.slug}/`}
+  current="categories"
+>
+  <section class="page-heading">
+    <p class="eyebrow">Category</p>
+    <h1>{group.name}</h1>
+  </section>
+  <PostList posts={group.posts} />
+</BaseLayout>
