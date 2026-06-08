@@ -79,10 +79,12 @@ svg {
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr auto;
+  min-width: 0;
 }
 
 #main-content {
   width: min(var(--wide), calc(100% - 32px));
+  min-width: 0;
   margin: 0 auto;
   padding: 48px 0 72px;
 }
@@ -90,6 +92,7 @@ svg {
 .site-header,
 .site-footer {
   width: min(var(--wide), calc(100% - 32px));
+  min-width: 0;
   margin: 0 auto;
 }
 
@@ -327,7 +330,9 @@ svg {
 .page-heading,
 .page-prose,
 .post {
+  width: 100%;
   max-width: var(--measure);
+  min-width: 0;
 }
 
 .page-heading {
@@ -357,6 +362,7 @@ svg {
 }
 
 .post-header h1 {
+  overflow-wrap: anywhere;
   font-size: clamp(2.5rem, 9vw, 5.4rem);
 }
 
@@ -365,6 +371,7 @@ svg {
   color: var(--muted);
   font-size: 1.2rem;
   line-height: 1.65;
+  overflow-wrap: break-word;
 }
 
 .post-meta {
@@ -386,6 +393,8 @@ svg {
 .article-content {
   font-size: 1.08rem;
   line-height: 1.78;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .article-content > * + * {
@@ -573,5 +582,9 @@ svg {
     align-items: flex-start;
     flex-direction: column;
     gap: 0;
+  }
+
+  .post-header h1 {
+    font-size: clamp(2.1rem, 11vw, 3.25rem);
   }
 }
