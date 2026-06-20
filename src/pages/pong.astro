@@ -7,7 +7,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <div class="tool-bar">
       <div class="tool-title">
         <h1>Pong</h1>
-        <p>A simple Pong-like game with top and bottom paddles. Use the left and right arrow keys to move your paddle. First to 5 points wins.</p>
+        <p>A simple Pong-like game with top and bottom paddles. Point or click to move your paddle. First to 5 points wins.</p>
       </div>
     </div>
 
@@ -95,7 +95,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             if (!gameRunning) return;
 
             // Move player paddle
-            player.x += player.dx;
+            // X position is now updated strictly via pointer events
             if (player.x < 0) player.x = 0;
             if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
 
@@ -192,30 +192,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             requestAnimationFrame(gameLoop);
         }
 
-        // Keyboard controls
-        document.addEventListener('keydown', function(event) {
-            // Only capture arrow keys to prevent scrolling when playing
-            if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-                event.preventDefault();
-            }
-            switch(event.key) {
-                case "ArrowLeft":
-                    player.dx = -6;
-                    break;
-                case "ArrowRight":
-                    player.dx = 6;
-                    break;
-            }
-        });
+        function handlePointer(e: PointerEvent) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const pointerX = (e.clientX - rect.left) * scaleX;
+            
+            player.x = pointerX - player.width / 2;
+            
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+        }
 
-        document.addEventListener('keyup', function(event) {
-             switch(event.key) {
-                case "ArrowLeft":
-                case "ArrowRight":
-                    player.dx = 0;
-                    break;
-            }
-        });
+        canvas.addEventListener('pointermove', handlePointer as EventListener);
+        canvas.addEventListener('pointerdown', handlePointer as EventListener);
 
         // Initial ball position
         resetBall();
