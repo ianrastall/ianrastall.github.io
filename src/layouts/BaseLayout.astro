@@ -6,8 +6,8 @@ interface Props {
   description?: string;
 }
 
-const { title, description = 'Time waster games and tools that run in your browser.' } = Astro.props;
-const pageTitle = title === 'Fooliosity' ? title : `${title} - Fooliosity`;
+const { title, description = "Ian Rastall's open-source projects, utilities, and software experiments." } = Astro.props;
+const pageTitle = title;
 ---
 <!doctype html>
 <html lang="en">
@@ -20,7 +20,7 @@ const pageTitle = title === 'Fooliosity' ? title : `${title} - Fooliosity`;
     <slot name="head" />
     <script is:inline>
       (() => {
-        const stored = localStorage.getItem('fooliosity-theme');
+        const stored = localStorage.getItem('ianrastall-repos-theme');
         const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
         document.documentElement.dataset.theme = stored || (prefersDark ? 'dark' : 'light');
       })();
@@ -30,15 +30,15 @@ const pageTitle = title === 'Fooliosity' ? title : `${title} - Fooliosity`;
     <div class="shell">
       <header class="site-header">
         <a class="brand" href="/">
-          <span class="brand-mark">F</span>
-          <span>Fooliosity</span>
+          <span class="brand-mark">IR</span>
+          <span>Ian Rastall</span>
         </a>
         <div class="header-actions">
           <label class="color-picker-wrap" title="Accent color">
             <span class="color-swatch" id="color-swatch"></span>
             <input type="color" id="accent-picker" />
           </label>
-          <a class="button" href="https://github.com/ianrastall/ianrastall.github.io" rel="noreferrer" target="_blank">GitHub</a>
+          <a class="button" href="https://github.com/ianrastall" rel="noreferrer" target="_blank">GitHub</a>
           <button id="theme-toggle" type="button">Theme</button>
         </div>
       </header>
@@ -46,7 +46,7 @@ const pageTitle = title === 'Fooliosity' ? title : `${title} - Fooliosity`;
     <slot />
     <div class="shell">
       <footer class="site-footer">
-        <p>Fooliosity runs locally in your browser.</p>
+        <p>Ian Rastall's open-source projects and software experiments.</p>
         <p class="support-blurb">If this saved you a few hours of work, or is something you would have paid $5 for, consider <a href="https://ko-fi.com/ianrastall" rel="noreferrer" target="_blank">buying me a coffee on Ko-fi</a>.</p>
       </footer>
     </div>
@@ -57,8 +57,8 @@ const pageTitle = title === 'Fooliosity' ? title : `${title} - Fooliosity`;
         const current = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
         const next = current === 'dark' ? 'light' : 'dark';
         document.documentElement.dataset.theme = next;
-        localStorage.setItem('fooliosity-theme', next);
-        applyAccent(localStorage.getItem('fooliosity-accent') || null);
+        localStorage.setItem('ianrastall-repos-theme', next);
+        applyAccent(localStorage.getItem('ianrastall-repos-accent') || null);
       });
 
       // Accent colour picker
@@ -108,7 +108,7 @@ const pageTitle = title === 'Fooliosity' ? title : `${title} - Fooliosity`;
       }
 
       function initAccent() {
-        const stored = localStorage.getItem('fooliosity-accent');
+        const stored = localStorage.getItem('ianrastall-repos-accent');
         const picker = document.getElementById('accent-picker') as HTMLInputElement | null;
         if (stored && picker) picker.value = stored;
         applyAccent(stored);
@@ -121,13 +121,13 @@ const pageTitle = title === 'Fooliosity' ? title : `${title} - Fooliosity`;
 
       document.getElementById('accent-picker')?.addEventListener('input', (e) => {
         const hex = (e.target as HTMLInputElement).value;
-        localStorage.setItem('fooliosity-accent', hex);
+        localStorage.setItem('ianrastall-repos-accent', hex);
         applyAccent(hex);
       });
 
       // Reset on double-click
       document.getElementById('accent-picker')?.addEventListener('dblclick', () => {
-        localStorage.removeItem('fooliosity-accent');
+        localStorage.removeItem('ianrastall-repos-accent');
         applyAccent(null);
         const swatch = document.getElementById('color-swatch');
         if (swatch) swatch.style.background = '';

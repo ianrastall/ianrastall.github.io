@@ -1,26 +1,25 @@
-# Fooliosity Time Wasters — Codex Handoff
+# Ian Rastall Repository Landing Page — Codex Handoff
 
 ## 1. Purpose
 
-This repository will contain **Fooliosity**, Ian Rastall's public collection of time wasters and simple browser games, served at:
+This repository contains Ian Rastall's public GitHub Pages landing page, served at:
 
 ```text
 https://ianrastall.github.io
 ```
 
-The site is styled and structured identically to the `text-utils` project, but hosts entertainment-focused applications (like a match-3 game) rather than productive utilities.
+The site is a single clean index page. Each listed repository appears as an independent blurb box and links directly to its GitHub repository.
 
 ## 2. Current repository state
 
-The site has been re-architected as a Time Wasters portal. The previous blog infrastructure has been entirely removed.
+The site has been simplified into a repository directory. Internal game/tool routing has been removed.
 
 The repository contains:
 
 - Astro configuration and package manifests;
-- Core layouts and styling matching `text-utils` (e.g., `BaseLayout.astro`, `global.css`);
-- `src/data/tools.ts` which tracks available tools and games;
-- A card-based home page (`src/pages/index.astro`);
-- An initial game: `pick-three.astro` (a low-stress match-3 puzzle).
+- Core layout and styling (`BaseLayout.astro`, `global.css`);
+- A single repository landing page (`src/pages/index.astro`);
+- A simple 404 page.
 
 Generated folders such as `node_modules/`, `dist/`, and `.astro/` are intentionally ignored and should not be committed.
 
@@ -31,8 +30,9 @@ Generated folders such as `node_modules/`, `dist/`, and `.astro/` are intentiona
 | `ianrastall/ianrastall.github.io` | This public website source and GitHub Pages deployment |
 
 Non-negotiable rules:
-- Keep the design identical in structure to `text-utils` (shell, panels, muted accents).
-- Do not re-introduce the Markdown blog infrastructure.
+- Keep repository data directly in `src/pages/index.astro`.
+- Do not add internal project pages or route cards.
+- Do not re-introduce the Markdown blog infrastructure or the old game portal.
 - Do not add a server runtime, database, conventional CMS, or authentication backend.
 
 ## 4. Intended technology stack
@@ -48,7 +48,7 @@ GitHub Pages
 
 Avoid:
 - a client-heavy single-page application architecture for the shell;
-- React/Vue/Svelte unless a specific isolated game clearly requires one;
+- React/Vue/Svelte for this static landing page;
 - unnecessary analytics or tracking.
 
 ## 5. Primary architecture
@@ -62,15 +62,11 @@ A recommended target structure is:
 public/
   favicon.svg
 src/
-  components/
-    ToolCard.astro
-  data/
-    tools.ts
   layouts/
     BaseLayout.astro
   pages/
     index.astro
-    pick-three.astro
+    404.astro
   styles/
     global.css
 astro.config.mjs
@@ -120,9 +116,9 @@ Recommended scripts:
 }
 ```
 
-## 8. Definition of done for tools
+## 8. Definition of done for repository entries
 
-When adding a new tool or game:
-- Add an entry in `src/data/tools.ts`.
-- Ensure colors are muted and animations are not excessive or "flashy".
-- The game logic must live on the client-side within an Astro page.
+When adding a new repository:
+- Add one object to the `repos` array in `src/pages/index.astro`.
+- Include `name`, `description`, and `url`.
+- Link directly to the GitHub repository with `target="_blank"` and `rel="noopener noreferrer"`.

@@ -1,16 +1,135 @@
 ---
-import ToolCard from '../components/ToolCard.astro';
-import { tools } from '../data/tools';
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+// You can keep adding the rest of your 25 repos directly to this list
+const repos = [
+  {
+    name: 'AudioPrep',
+    description: 'A WPF-based audio mastering suite for high-fidelity mixing, target LUFS, and tempo shifting.',
+    url: 'https://github.com/ianrastall/AudioPrep'
+  },
+  {
+    name: 'Dungeon',
+    description: 'Ongoing game development project.',
+    url: 'https://github.com/ianrastall/Dungeon'
+  },
+  {
+    name: 'Bookstacks',
+    description: 'Curated digital archives of public domain literature, converted into standardized formats and narrated videos.',
+    url: 'https://github.com/ianrastall/bookstacks'
+  },
+  {
+    name: 'PgnTools',
+    description: 'Utilities for processing chess games and managing FIDE rating databases.',
+    url: 'https://github.com/ianrastall/PgnTools'
+  },
+  {
+    name: 'current-events-context',
+    description: 'Technical repository for tracking and contextualizing current events.',
+    url: 'https://github.com/ianrastall/current-events-context'
+  },
+  {
+    name: 'Robot Chess',
+    description: 'Software tools and opening suites for engine matchups.',
+    url: 'https://github.com/ianrastall/RobotChess'
+  }
+];
 ---
-<BaseLayout title="Fooliosity">
+<BaseLayout title="Ian Rastall - Repositories">
   <main class="shell">
     <section class="hero text-center pt-5 pb-4">
-      <h1>Time Wasters</h1>
-      <p class="lead text-muted">A collection of simple games and toys to pass the time.</p>
+      <h1>My Repositories</h1>
+      <p class="lead text-muted">A collection of my open-source projects, utilities, and software experiments.</p>
     </section>
-    <section class="tool-grid" aria-label="Available tools">
-      {tools.map((tool) => <ToolCard tool={tool} />)}
+
+    <section class="repo-grid" aria-label="GitHub Repositories">
+      {repos.map((repo) => (
+        <div class="repo-box">
+          <h2>{repo.name}</h2>
+          <p>{repo.description}</p>
+          <a href={repo.url} target="_blank" rel="noopener noreferrer" class="repo-link">
+            View on GitHub &rarr;
+          </a>
+        </div>
+      ))}
     </section>
   </main>
 </BaseLayout>
+
+<style>
+  .text-center {
+    text-align: center;
+  }
+
+  .text-center h1,
+  .text-center p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .pt-5 {
+    padding-top: 3rem;
+  }
+
+  .pb-4 {
+    padding-bottom: 1.5rem;
+  }
+
+  .lead {
+    font-size: 1.08rem;
+  }
+
+  .text-muted {
+    color: var(--muted);
+  }
+
+  .repo-grid {
+    display: grid;
+    /* This automatically creates a responsive grid of boxes */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem 0;
+  }
+
+  .repo-box {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .repo-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+
+  .repo-box h2 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+    color: #1a202c;
+  }
+
+  .repo-box p {
+    flex-grow: 1;
+    color: #4a5568;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+  }
+
+  .repo-link {
+    display: inline-block;
+    font-weight: 600;
+    color: #3182ce;
+    text-decoration: none;
+    align-self: flex-start;
+  }
+
+  .repo-link:hover {
+    text-decoration: underline;
+  }
+</style>
