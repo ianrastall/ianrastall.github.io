@@ -1,0 +1,546 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Oregon Trail">
+  <main class="shell tool-shell">
+    <div class="tool-bar">
+      <div class="tool-title">
+        <h1>Oregon Trail</h1>
+        <p>A faithful port of the original 1978 BASIC game. Type your commands in the terminal below.</p>
+      </div>
+    </div>
+
+    <div class="panel" style="max-width: 800px; margin: 0 auto; background-color: #000; color: #0f0; border-radius: 4px; padding: 1rem; font-family: 'Courier New', Courier, monospace; overflow: hidden; display: flex; flex-direction: column; height: 600px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);">
+      <div id="ot-output" style="flex-grow: 1; overflow-y: auto; margin-bottom: 1rem; white-space: pre-wrap; font-size: 16px; line-height: 1.4;"></div>
+      <div style="display: flex; align-items: center;">
+        <span style="margin-right: 8px;">></span>
+        <input type="text" id="ot-input" autocomplete="off" spellcheck="false" style="flex-grow: 1; background: transparent; border: none; color: #0f0; font-family: 'Courier New', Courier, monospace; font-size: 16px; outline: none;" />
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const outputEl = document.getElementById('ot-output') as HTMLDivElement;
+    const inputEl = document.getElementById('ot-input') as HTMLInputElement;
+    if (!outputEl || !inputEl) return;
+
+    function print(text: string = "") {
+        outputEl.innerHTML += text + "<br>";
+        outputEl.scrollTop = outputEl.scrollHeight;
+    }
+
+    function rnd(val: number = -1) {
+        return Math.random();
+    }
+
+    let S: Record<string, any> = {
+        state: "INIT",
+        A: 0, B: 0, C: 0, M1: 0, F: 0, T: 700,
+        B1: 0, B3: 0,
+        C1: 0, D1: 0, D3: 0, D9: 0,
+        E: 0, F1: 0, F2: 0, F9: 0,
+        K8: 0, L1: 0, M: 0, M2: 0, M9: 0,
+        P: 0, S4: 0, S5: 0, S6: 0,
+        T1: 0, X: 0, X1: -1,
+        targetWord: "",
+        fortItem: ""
+    };
+
+    function processInput(val: string) {
+        val = val.trim().toUpperCase();
+        
+        switch (S.state) {
+            case "INIT":
+                if (val === "YES" || val === "Y") printInstructions();
+                S.state = "MARKSMAN";
+                print("<br>HOW GOOD A SHOT ARE YOU WITH YOUR RIFLE?");
+                print("  (1) ACE MARKSMAN,  (2) GOOD SHOT,  (3) FAIR TO MIDDLIN'");
+                print("         (4) NEED MORE PRACTICE,  (5) SHAKY KNEES");
+                print("ENTER ONE OF THE ABOVE -- THE BETTER YOU CLAIM YOU ARE, THE");
+                print("FASTER YOU'LL HAVE TO BE WITH YOUR GUN TO BE SUCCESSFUL.");
+                break;
+            case "MARKSMAN":
+                S.D9 = parseInt(val);
+                if (isNaN(S.D9) || S.D9 < 1 || S.D9 > 5) S.D9 = 0;
+                initPurchases();
+                break;
+            case "BUY_OXEN":
+                S.A = parseInt(val);
+                if (isNaN(S.A) || S.A < 200) { print("NOT ENOUGH"); print("HOW MUCH DO YOU WANT TO SPEND ON YOUR OXEN TEAM?"); }
+                else if (S.A > 300) { print("TOO MUCH"); print("HOW MUCH DO YOU WANT TO SPEND ON YOUR OXEN TEAM?"); }
+                else { S.state = "BUY_FOOD"; print("HOW MUCH DO YOU WANT TO SPEND ON FOOD?"); }
+                break;
+            case "BUY_FOOD":
+                S.F = parseInt(val);
+                if (isNaN(S.F) || S.F < 0) { print("IMPOSSIBLE"); print("HOW MUCH DO YOU WANT TO SPEND ON FOOD?"); }
+                else { S.state = "BUY_AMMO"; print("HOW MUCH DO YOU WANT TO SPEND ON AMMUNITION?"); }
+                break;
+            case "BUY_AMMO":
+                S.B = parseInt(val);
+                if (isNaN(S.B) || S.B < 0) { print("IMPOSSIBLE"); print("HOW MUCH DO YOU WANT TO SPEND ON AMMUNITION?"); }
+                else { S.state = "BUY_CLOTHES"; print("HOW MUCH DO YOU WANT TO SPEND ON CLOTHING?"); }
+                break;
+            case "BUY_CLOTHES":
+                S.C = parseInt(val);
+                if (isNaN(S.C) || S.C < 0) { print("IMPOSSIBLE"); print("HOW MUCH DO YOU WANT TO SPEND ON CLOTHING?"); }
+                else { S.state = "BUY_MISC"; print("HOW MUCH DO YOU WANT TO SPEND ON MISCELLANEOUS SUPPLIES?"); }
+                break;
+            case "BUY_MISC":
+                S.M1 = parseInt(val);
+                if (isNaN(S.M1) || S.M1 < 0) { print("IMPOSSIBLE"); print("HOW MUCH DO YOU WANT TO SPEND ON MISCELLANEOUS SUPPLIES?"); }
+                else {
+                    S.T = 700 - S.A - S.F - S.B - S.C - S.M1;
+                    if (S.T < 0) {
+                        print("YOU OVERSPENT--YOU ONLY HAD $700 TO SPEND.  BUY AGAIN");
+                        initPurchases();
+                    } else {
+                        S.B = 50 * S.B;
+                        print("AFTER ALL YOUR PURCHASES, YOU NOW HAVE " + S.T + " DOLLARS LEFT");
+                        print("<br>MONDAY MARCH 29 1847<br>");
+                        beginTurn();
+                    }
+                }
+                break;
+            case "TRAIL_MENU":
+                S.X = parseInt(val);
+                if (S.X1 === -1) {
+                    if (S.X === 1 || S.X === 2) { S.X = S.X + 1; if (S.X === 3 && S.B <= 39) { print("TOUGH---YOU NEED MORE BULLETS TO GO HUNTING"); S.state = "TRAIL_MENU"; print("DO YOU WANT TO (1) HUNT, OR (2) CONTINUE"); return; } S.X1 *= -1; }
+                    else { S.X = 3; S.X1 *= -1; }
+                } else {
+                    if (isNaN(S.X) || S.X < 1 || S.X > 3) S.X = 3;
+                }
+                
+                if (S.X === 1) { // Fort
+                    S.state = "FORT_FOOD";
+                    print("ENTER WHAT YOU WISH TO SPEND ON THE FOLLOWING");
+                    print("FOOD");
+                } else if (S.X === 2) { // Hunt
+                    if (S.B <= 39) {
+                        print("TOUGH---YOU NEED MORE BULLETS TO GO HUNTING");
+                        promptTrailMenu();
+                    } else {
+                        S.M -= 45;
+                        shootSubroutine("HUNT_RESULT");
+                    }
+                } else { // Continue
+                    eatMenu();
+                }
+                break;
+            case "FORT_FOOD":
+                fortBuy(val, "F"); S.state = "FORT_AMMO"; print("AMMUNITION"); break;
+            case "FORT_AMMO":
+                fortBuy(val, "B"); S.state = "FORT_CLOTHES"; print("CLOTHING"); break;
+            case "FORT_CLOTHES":
+                fortBuy(val, "C"); S.state = "FORT_MISC"; print("MISCELLANEOUS SUPPLIES"); break;
+            case "FORT_MISC":
+                fortBuy(val, "M1"); S.M -= 45; eatMenu(); break;
+            
+            case "HUNT_RESULT":
+                calcShootTime(val);
+                if (S.B1 <= 1) {
+                    print("RIGHT BETWEEN THE EYES---YOU GOT A BIG ONE!!!!<br>FULL BELLIES TONIGHT!");
+                    S.F += 52 + Math.floor(rnd()*6);
+                    S.B -= 10 - Math.floor(rnd()*4);
+                } else if (100 * rnd() >= 13 * S.B1) {
+                    S.F += 48 - 2 * S.B1;
+                    print("NICE SHOT--RIGHT ON TARGET--GOOD EATIN' TONIGHT!!");
+                    S.B -= 10 - 3 * S.B1;
+                } else {
+                    print("YOU MISSED---AND YOUR DINNER GOT AWAY.....");
+                }
+                eatMenu();
+                break;
+
+            case "EAT_MENU":
+                S.E = parseInt(val);
+                if (isNaN(S.E) || S.E < 1 || S.E > 3) { print("DO YOU WANT TO EAT (1) POORLY  (2) MODERATELY OR (3) WELL"); return; }
+                S.F = S.F - 8 - 5 * S.E;
+                if (S.F < 0) {
+                    S.F = S.F + 8 + 5 * S.E;
+                    print("YOU CAN'T EAT THAT WELL");
+                    print("DO YOU WANT TO EAT (1) POORLY  (2) MODERATELY OR (3) WELL");
+                } else {
+                    S.M += 200 + (S.A - 220) / 5 + 10 * rnd();
+                    S.L1 = 0; S.C1 = 0;
+                    ridersAttack();
+                }
+                break;
+
+            case "RIDERS_TACTICS":
+                S.T1 = parseInt(val);
+                if (isNaN(S.T1) || S.T1 < 1 || S.T1 > 4) { print("(1) RUN  (2) ATTACK  (3) CONTINUE  (4) CIRCLE WAGONS"); return; }
+                handleRidersTactics();
+                break;
+            case "SHOOT_RIDERS":
+                calcShootTime(val);
+                S.B = S.B - S.B1 * 40 - 80;
+                if (S.B1 > 1) {
+                    if (S.B1 <= 4) { print("LOUSY SHOT---YOU GOT KNIFED"); S.K8 = 1; print("YOU HAVE TO SEE OL' DOC BLANCHARD"); }
+                    else { print("KINDA SLOW WITH YOUR COLT .45"); }
+                } else {
+                    print("NICE SHOOTING---YOU DROVE THEM OFF");
+                }
+                ridersLossCheck();
+                break;
+            case "SHOOT_CIRCLE_RIDERS":
+                calcShootTime(val);
+                S.B = S.B - S.B1 * 30 - 80;
+                S.M -= 25;
+                if (S.B1 > 1) {
+                    if (S.B1 <= 4) { print("LOUSY SHOT---YOU GOT KNIFED"); S.K8 = 1; print("YOU HAVE TO SEE OL' DOC BLANCHARD"); }
+                    else { print("KINDA SLOW WITH YOUR COLT .45"); }
+                } else {
+                    print("NICE SHOOTING---YOU DROVE THEM OFF");
+                }
+                ridersLossCheck();
+                break;
+            case "BANDIT_SHOOT":
+                calcShootTime(val);
+                S.B = S.B - 20 * S.B1;
+                if (S.B < 0) {
+                    print("YOU RAN OUT OF BULLETS---THEY GET LOTS OF CASH");
+                    S.T = S.T / 3;
+                } else if (S.B1 <= 1) {
+                    print("QUICKEST DRAW OUTSIDE OF DODGE CITY!!!<br>YOU GOT 'EM!");
+                } else {
+                    print("YOU GOT SHOT IN THE LEG AND THEY TOOK ONE OF YOUR OXEN");
+                    S.K8 = 1; print("BETTER HAVE A DOC LOOK AT YOUR WOUND");
+                    S.M1 -= 5; S.A -= 20;
+                }
+                mountains();
+                break;
+            case "ANIMAL_SHOOT":
+                calcShootTime(val);
+                if (S.B <= 39) {
+                    print("YOU WERE TOO LOW ON BULLETS--<br>THE WOLVES OVERPOWERED YOU");
+                    S.K8 = 1; die("INJURIES"); return;
+                }
+                if (S.B1 > 2) {
+                    print("SLOW ON THE DRAW---THEY GOT AT YOUR FOOD AND CLOTHES");
+                    S.B -= 20 * S.B1; S.C -= S.B1 * 4; S.F -= S.B1 * 8;
+                } else {
+                    print("NICE SHOOTIN' PARDNER---THEY DIDN'T GET MUCH");
+                    S.B -= 20 * S.B1; S.C -= S.B1 * 4; S.F -= S.B1 * 8;
+                }
+                mountains();
+                break;
+
+            case "GAME_OVER":
+                if (val) window.location.reload();
+                break;
+        }
+    }
+
+    function initPurchases() {
+        S.X1 = -1; S.K8=0; S.S4=0; S.F1=0; S.F2=0; S.M=0; S.M9=0; S.D3=0;
+        print("<br>HOW MUCH DO YOU WANT TO SPEND ON YOUR OXEN TEAM?");
+        S.state = "BUY_OXEN";
+    }
+
+    function fortBuy(val: string, prop: string) {
+        let p = parseInt(val);
+        if (isNaN(p) || p < 0) p = 0;
+        S.T -= p;
+        if (S.T < 0) {
+            print("YOU DON'T HAVE THAT MUCH--KEEP YOUR SPENDING DOWN");
+            print("YOU MISS YOUR CHANCE TO SPEND ON THAT ITEM");
+            S.T += p; p = 0;
+        }
+        if (prop === "B") S[prop] = Math.floor(S[prop] + 2/3 * p * 50);
+        else S[prop] += 2/3 * p;
+    }
+
+    function shootSubroutine(nextState: string) {
+        const words = ["BANG", "BLAM", "POW", "WHAM"];
+        S.S6 = Math.floor(rnd() * 4);
+        S.targetWord = words[S.S6];
+        S.B3 = Date.now();
+        S.state = nextState;
+        print("TYPE " + S.targetWord);
+    }
+
+    function calcShootTime(val: string) {
+        let b1Time = (Date.now() - S.B3) / 1000;
+        S.B1 = b1Time - (S.D9 - 1);
+        if (S.B1 < 0) S.B1 = 0;
+        if (val !== S.targetWord) S.B1 = 9;
+    }
+
+    function beginTurn() {
+        if (S.F < 0) S.F = 0; if (S.B < 0) S.B = 0; if (S.C < 0) S.C = 0; if (S.M1 < 0) S.M1 = 0;
+        if (S.F >= 13) { } else print("YOU'D BETTER DO SOME HUNTING OR BUY FOOD AND SOON!!!!");
+        S.F = Math.floor(S.F); S.B = Math.floor(S.B); S.C = Math.floor(S.C); S.M1 = Math.floor(S.M1); S.T = Math.floor(S.T); S.M = Math.floor(S.M);
+        S.M2 = S.M;
+
+        if (S.S4 === 1 || S.K8 === 1) {
+            S.T -= 20;
+            if (S.T < 0) { S.T = 0; print("YOU CAN'T AFFORD A DOCTOR"); die(S.K8 === 1 ? "INJURIES" : "PNEUMONIA"); return; }
+            print("DOCTOR'S BILL IS $20");
+            S.K8 = 0; S.S4 = 0;
+        }
+
+        if (S.M9 === 1) { print("TOTAL MILEAGE IS 950"); S.M9 = 0; }
+        else { print("TOTAL MILEAGE IS " + S.M); }
+
+        print("FOOD    BULLETS CLOTHING MISC.SUPP CASH");
+        print(`${S.F}\t${S.B}\t${S.C}\t ${S.M1}\t   ${S.T}`);
+
+        promptTrailMenu();
+    }
+
+    function promptTrailMenu() {
+        S.state = "TRAIL_MENU";
+        if (S.X1 === -1) {
+            print("DO YOU WANT TO (1) HUNT, OR (2) CONTINUE");
+        } else {
+            print("DO YOU WANT TO (1) STOP AT THE NEXT FORT, (2) HUNT, OR (3) CONTINUE");
+        }
+    }
+
+    function eatMenu() {
+        if (S.F < 13) { print("YOU RAN OUT OF FOOD AND STARVED TO DEATH"); die(""); return; }
+        S.state = "EAT_MENU";
+        print("DO YOU WANT TO EAT (1) POORLY  (2) MODERATELY OR (3) WELL");
+    }
+
+    function ridersAttack() {
+        if (rnd() * 10 > (Math.pow(S.M/100 - 4, 2) + 72) / (Math.pow(S.M/100 - 4, 2) + 12) - 1) { selectionOfEvents(); return; }
+        S.S5 = 0;
+        let msg = "RIDERS AHEAD.  THEY ";
+        if (rnd() < 0.8) { msg += "DON'T "; S.S5 = 1; }
+        msg += "LOOK HOSTILE"; print(msg);
+        print("TACTICS"); print("(1) RUN  (2) ATTACK  (3) CONTINUE  (4) CIRCLE WAGONS");
+        if (rnd() > 0.2) { } else S.S5 = 1 - S.S5;
+        S.state = "RIDERS_TACTICS";
+    }
+
+    function handleRidersTactics() {
+        if (S.S5 === 1) { // friendly
+            if (S.T1 === 1) { S.M += 15; S.A -= 10; ridersLossCheck(); }
+            else if (S.T1 === 2) { S.M -= 5; S.B -= 100; ridersLossCheck(); }
+            else if (S.T1 === 3) { ridersLossCheck(); }
+            else { S.M -= 20; ridersLossCheck(); }
+        } else { // hostile
+            if (S.T1 === 1) { S.M += 20; S.M1 -= 15; S.B -= 150; S.A -= 40; ridersLossCheck(); }
+            else if (S.T1 === 2) { shootSubroutine("SHOOT_RIDERS"); }
+            else if (S.T1 === 3) { 
+                if (rnd() > 0.8) { print("THEY DID NOT ATTACK"); selectionOfEvents(); }
+                else { S.B -= 150; S.M1 -= 15; ridersLossCheck(); }
+            }
+            else { shootSubroutine("SHOOT_CIRCLE_RIDERS"); }
+        }
+    }
+
+    function ridersLossCheck() {
+        if (S.S5 === 0) {
+            print("RIDERS WERE HOSTILE--CHECK FOR LOSSES");
+            if (S.B < 0) { print("YOU RAN OUT OF BULLETS AND GOT MASSACRED BY THE RIDERS"); die(""); return; }
+        } else { print("RIDERS WERE FRIENDLY, BUT CHECK FOR POSSIBLE LOSSES"); }
+        selectionOfEvents();
+    }
+
+    function selectionOfEvents() {
+        let D1 = 0;
+        let R1 = 100 * rnd();
+        let D_vals = [6,11,13,15,17,22,32,35,37,42,44,54,64,69,95];
+        while (true) {
+            if (D1 === 15) { D1++; break; } // index 15 means helpful indians
+            if (R1 > D_vals[D1]) { D1++; } else { D1++; break; }
+        }
+
+        switch(D1) {
+            case 1: print("WAGON BREAKS DOWN--LOSE TIME AND SUPPLIES FIXING IT"); S.M -= 15 + 5 * rnd(); S.M1 -= 8; mountains(); break;
+            case 2: print("OX INJURES LEG---SLOWS YOU DOWN REST OF TRIP"); S.M -= 25; S.A -= 20; mountains(); break;
+            case 3: print("BAD LUCK---YOUR DAUGHTER BROKE HER ARM<br>YOU HAD TO STOP AND USE SUPPLIES TO MAKE A SLING"); S.M -= 5 + 4 * rnd(); S.M1 -= 2 + 3 * rnd(); mountains(); break;
+            case 4: print("OX WANDERS OFF---SPEND TIME LOOKING FOR IT"); S.M -= 17; mountains(); break;
+            case 5: print("YOUR SON GETS LOST---SPEND HALF THE DAY LOOKING FOR HIM"); S.M -= 10; mountains(); break;
+            case 6: print("UNSAFE WATER--LOSE TIME LOOKING FOR CLEAN SPRING"); S.M -= 10 * rnd() - 2; mountains(); break;
+            case 7: 
+                if (S.M > 950) { coldWeather(); } 
+                else { print("HEAVY RAINS---TIME AND SUPPLIES LOST"); S.F -= 10; S.B -= 500; S.M1 -= 15; S.M -= 10 * rnd() - 5; mountains(); }
+                break;
+            case 8: print("BANDITS ATTACK"); shootSubroutine("BANDIT_SHOOT"); break;
+            case 9: print("THERE WAS A FIRE IN YOUR WAGON--FOOD AND SUPPLIES DAMAGED"); S.F -= 40; S.B -= 400; S.M1 -= rnd() * 8 - 3; S.M -= 15; mountains(); break;
+            case 10: print("LOSE YOUR WAY IN HEAVY FOG---TIME IS LOST"); S.M -= 10 - 5 * rnd(); mountains(); break;
+            case 11: print("YOU KILLED A POISONOUS SNAKE AFTER IT BIT YOU"); S.B -= 10; S.M1 -= 5; if (S.M1 < 0) { print("YOU DIE OF SNAKEBITE SINCE YOU HAVE NO MEDICINE"); die(""); } else mountains(); break;
+            case 12: print("WAGON GETS SWAMPED FORDING RIVER--LOSE FOOD AND CLOTHES"); S.F -= 30; S.C -= 20; S.M -= 20 - 20 * rnd(); mountains(); break;
+            case 13: print("WILD ANIMALS ATTACK!"); shootSubroutine("ANIMAL_SHOOT"); break;
+            case 14: 
+                print("HAIL STORM---SUPPLIES DAMAGED"); S.M -= 5 - rnd() * 10; S.B -= 200; S.M1 -= 4 - rnd() * 3; mountains(); break;
+            case 15:
+                if (S.E === 1 || (S.E === 3 && rnd() < 0.5) || rnd() > 0.25) illness(); else mountains(); break;
+            case 16: print("HELPFUL INDIANS SHOW YOU WHERE TO FIND MORE FOOD"); S.F += 14; mountains(); break;
+        }
+    }
+
+    function coldWeather() {
+        print("COLD WEATHER---BRRRRRRR!---YOU ");
+        if (S.C > 22 + 4 * rnd()) { print("HAVE ENOUGH CLOTHING TO KEEP YOU WARM"); mountains(); }
+        else { print("DON'T HAVE ENOUGH CLOTHING TO KEEP YOU WARM"); S.C1 = 1; illness(); }
+    }
+
+    function illness() {
+        if (100 * rnd() < 10 + 35 * (S.E - 1)) {
+            print("MILD ILLNESS---MEDICINE USED"); S.M -= 5; S.M1 -= 2;
+        } else if (100 * rnd() < 100 - (40 / Math.pow(4, S.E - 1))) {
+            print("BAD ILLNESS---MEDICINE USED"); S.M -= 5; S.M1 -= 5;
+        } else {
+            print("SERIOUS ILLNESS---<br>YOU MUST STOP FOR MEDICAL ATTENTION"); S.M1 -= 10; S.S4 = 1;
+        }
+        if (S.M1 < 0) { print("YOU RAN OUT OF MEDICAL SUPPLIES"); die(S.K8 === 1 ? "INJURIES" : "PNEUMONIA"); return; }
+        if (S.L1 === 1) checkMileage(); else mountains();
+    }
+
+    function mountains() {
+        if (S.M <= 950) { checkMileage(); return; }
+        if (rnd() * 10 > 9 - (Math.pow(S.M/100 - 15, 2) + 72) / (Math.pow(S.M/100 - 15, 2) + 12)) {
+            mountainPass(); return;
+        }
+        print("RUGGED MOUNTAINS");
+        if (rnd() <= 0.1) { print("YOU GOT LOST---LOSE VALUABLE TIME TRYING TO FIND TRAIL!"); S.M -= 60; mountainPass(); return; }
+        if (rnd() <= 0.11) { print("WAGON DAMAGED!---LOSE TIME AND SUPPLIES"); S.M1 -= 5; S.B -= 200; S.M -= 20 - 30 * rnd(); mountainPass(); return; }
+        print("THE GOING GETS SLOW"); S.M -= 45 - rnd() / 0.02; mountainPass();
+    }
+
+    function mountainPass() {
+        if (S.F1 !== 1) {
+            S.F1 = 1;
+            if (rnd() < 0.8) { blizzard(); return; }
+            print("YOU MADE IT SAFELY THROUGH SOUTH PASS--NO SNOW");
+        }
+        if (S.M < 1700) { checkMileage(); return; }
+        if (S.F2 !== 1) {
+            S.F2 = 1;
+            if (rnd() < 0.7) { blizzard(); return; }
+        }
+        if (S.M > 950) { checkMileage(); return; }
+        S.M9 = 1; checkMileage();
+    }
+
+    function blizzard() {
+        print("BLIZZARD IN MOUNTAIN PASS--TIME AND SUPPLIES LOST");
+        S.L1 = 1; S.F -= 25; S.M1 -= 10; S.B -= 300; S.M -= 30 - 40 * rnd();
+        if (S.C < 18 + 2 * rnd()) illness(); else checkMileage();
+    }
+
+    function checkDate() {
+        S.D3 += 1;
+        let dateStr = "";
+        let dayNames = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
+        if (S.D3 <= 20) {
+            let dates = ["APRIL 12", "APRIL 26", "MAY 10", "MAY 24", "JUNE 7", "JUNE 21", "JULY 5", "JULY 19", "AUGUST 2", "AUGUST 16", "AUGUST 31", "SEPTEMBER 13", "SEPTEMBER 27", "OCTOBER 11", "OCTOBER 25", "NOVEMBER 8", "NOVEMBER 22", "DECEMBER 6", "DECEMBER 20"];
+            dateStr = "MONDAY " + dates[S.D3 - 1] + " 1847";
+        } else {
+            print("YOU HAVE BEEN ON THE TRAIL TOO LONG  ------<br>YOUR FAMILY DIES IN THE FIRST BLIZZARD OF WINTER");
+            die(""); return false;
+        }
+        print("<br>" + dateStr + "<br>");
+        return true;
+    }
+
+    function checkMileage() {
+        if (S.M >= 2040) { winGame(); return; }
+        if (checkDate()) beginTurn();
+    }
+
+    function winGame() {
+        S.F9 = (2040 - S.M2) / (S.M - S.M2);
+        S.F = S.F + (1 - S.F9) * (8 + 5 * S.E);
+        print("<br>YOU FINALLY ARRIVED AT OREGON CITY<br>AFTER 2040 LONG MILES---HOORAY!!!!!<br>A REAL PIONEER!<br>");
+        S.F9 = Math.floor(S.F9 * 14);
+        S.D3 = S.D3 * 14 + S.F9;
+        S.F9 += 1;
+        
+        let days = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
+        let dName = days[(S.F9 - 1) % 7];
+        
+        let mName = "";
+        let dNum = S.D3;
+        if (S.D3 <= 124) { dNum -= 93; mName = "JULY"; }
+        else if (S.D3 <= 155) { dNum -= 124; mName = "AUGUST"; }
+        else if (S.D3 <= 185) { dNum -= 155; mName = "SEPTEMBER"; }
+        else if (S.D3 <= 216) { dNum -= 185; mName = "OCTOBER"; }
+        else if (S.D3 <= 246) { dNum -= 216; mName = "NOVEMBER"; }
+        else { dNum -= 246; mName = "DECEMBER"; }
+
+        print(dName + " " + mName + " " + dNum + " 1847<br>");
+        print("FOOD    BULLETS CLOTHING MISC.SUPP CASH");
+        if (S.B < 0) S.B = 0; if (S.C < 0) S.C = 0; if (S.M1 < 0) S.M1 = 0; if (S.T < 0) S.T = 0; if (S.F < 0) S.F = 0;
+        print(`${Math.floor(S.F)}\t${Math.floor(S.B)}\t${Math.floor(S.C)}\t ${Math.floor(S.M1)}\t   ${Math.floor(S.T)}<br>`);
+        print("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PRESIDENT JAMES K. POLK SENDS YOU HIS<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HEARTIEST CONGRATULATIONS<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND WISHES YOU A PROSPEROUS LIFE AHEAD<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AT YOUR NEW HOME");
+        
+        S.state = "GAME_OVER";
+    }
+
+    function die(reason: string) {
+        if (reason) print("YOU DIED OF " + reason);
+        print("<br>DUE TO YOUR UNFORTUNATE SITUATION, THERE ARE A FEW<br>FORMALITIES WE MUST GO THROUGH<br>");
+        print("WOULD YOU LIKE US TO INFORM YOUR NEXT OF KIN? (YES/NO)");
+        S.state = "DEATH_KIN";
+    }
+
+    inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const val = inputEl.value;
+            inputEl.value = "";
+            print("> " + val);
+            
+            if (S.state === "DEATH_KIN") {
+                if (val.trim().toUpperCase() === "YES" || val.trim().toUpperCase() === "Y") print("THAT WILL BE $4.50 FOR THE TELEGRAPH CHARGE.<br>");
+                else print("BUT YOUR AUNT SADIE IN ST. LOUIS IS REALLY WORRIED ABOUT YOU<br>");
+                print("WE THANK YOU FOR THIS INFORMATION AND WE ARE SORRY YOU<br>DIDN'T MAKE IT TO THE GREAT TERRITORY OF OREGON<br>BETTER LUCK NEXT TIME<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SINCERELY<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;THE OREGON CITY CHAMBER OF COMMERCE");
+                print("<br><br>PRESS ENTER TO RESTART");
+                S.state = "GAME_OVER";
+                return;
+            }
+
+            processInput(val);
+        }
+    });
+
+    function printInstructions() {
+        print("THIS PROGRAM SIMULATES A TRIP OVER THE OREGON TRAIL FROM");
+        print("INDEPENDENCE, MISSOURI TO OREGON CITY, OREGON IN 1847.");
+        print("YOUR FAMILY OF FIVE WILL COVER THE 2040 MILE OREGON TRAIL");
+        print("IN 5-6 MONTHS --- IF YOU MAKE IT ALIVE.");
+        print("<br>YOU HAD SAVED $900 TO SPEND FOR THE TRIP, AND YOU'VE JUST");
+        print("   PAID $200 FOR A WAGON.");
+        print("YOU WILL NEED TO SPEND THE REST OF YOUR MONEY ON THE");
+        print("   FOLLOWING ITEMS:");
+        print("<br>     OXEN - YOU CAN SPEND $200-$300 ON YOUR TEAM");
+        print("            THE MORE YOU SPEND, THE FASTER YOU'LL GO");
+        print("               BECAUSE YOU'LL HAVE BETTER ANIMALS");
+        print("<br>     FOOD - THE MORE YOU HAVE, THE LESS CHANCE THERE");
+        print("               IS OF GETTING SICK");
+        print("<br>     AMMUNITION - $1 BUYS A BELT OF 50 BULLETS");
+        print("            YOU WILL NEED BULLETS FOR ATTACKS BY ANIMALS");
+        print("               AND BANDITS, AND FOR HUNTING FOOD");
+        print("<br>     CLOTHING - THIS IS ESPECIALLY IMPORTANT FOR THE COLD");
+        print("               WEATHER YOU WILL ENCOUNTER WHEN CROSSING");
+        print("               THE MOUNTAINS");
+        print("<br>     MISCELLANEOUS SUPPLIES - THIS INCLUDES MEDICINE AND");
+        print("               OTHER THINGS YOU WILL NEED FOR SICKNESS");
+        print("               AND EMERGENCY REPAIRS");
+        print("<br><br>YOU CAN SPEND ALL YOUR MONEY BEFORE YOU START YOUR TRIP -");
+        print("OR YOU CAN SAVE SOME OF YOUR CASH TO SPEND AT FORTS ALONG");
+        print("THE WAY WHEN YOU RUN LOW.  HOWEVER, ITEMS COST MORE AT");
+        print("THE FORTS.  YOU CAN ALSO GO HUNTING ALONG THE WAY TO GET");
+        print("MORE FOOD.");
+        print("WHENEVER YOU HAVE TO USE YOUR TRUSTY RIFLE ALONG THE WAY,");
+        print("YOU WILL BE TOLD TO TYPE IN A WORD (ONE THAT SOUNDS LIKE A");
+        print("GUN SHOT).  THE FASTER YOU TYPE IN THAT WORD AND HIT THE");
+        print("\"RETURN\" KEY, THE BETTER LUCK YOU'LL HAVE WITH YOUR GUN.");
+        print("<br>AT EACH TURN, ALL ITEMS ARE SHOWN IN DOLLAR AMOUNTS");
+        print("EXCEPT BULLETS");
+        print("WHEN ASKED TO ENTER MONEY AMOUNTS, DON'T USE A \"$\".");
+        print("<br>GOOD LUCK!!!<br>");
+    }
+
+    // Start game
+    print("DO YOU NEED INSTRUCTIONS  (YES/NO)");
+    inputEl.focus();
+});
+</script>

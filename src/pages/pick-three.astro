@@ -86,8 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         state = {
-            grid: [], score: 0, isChecking: false, isGameOver: false,
-            firstSelected: null, focusedCoord: { r: 0, c: 0 }
+            grid: [] as any[][], score: 0, isChecking: false, isGameOver: false,
+            firstSelected: null as any | null, focusedCoord: { r: 0, c: 0 }
         };
 
         dom = {
