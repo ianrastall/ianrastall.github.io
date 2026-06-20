@@ -1,0 +1,375 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Pick 3">
+  <main class="shell tool-shell">
+    <div class="tool-bar">
+      <div class="tool-title">
+        <h1>Pick 3</h1>
+        <p>A low-stress match-3 puzzle to clear your mind. Swap adjacent blocks to match 3 or more.</p>
+      </div>
+    </div>
+
+    <div class="two-column" style="display: grid; grid-template-columns: 1fr; max-width: 600px; margin: 0 auto;">
+      <div class="panel">
+        <div id="gridContainer">
+          <div id="pick3Grid" role="grid" tabindex="0" aria-label="Game Board"></div>
+          <div id="gridOverlay">
+            <h2>Game Over</h2>
+            <p>No more possible moves.</p>
+            <button class="primary" id="playAgainBtn">Play Again</button>
+          </div>
+        </div>
+
+        <div class="status-line" style="margin-top: 1.5rem; justify-content: center; font-size: 1.2rem;">
+          <span id="score" aria-live="polite">Score: 0</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  #gridContainer {
+      background-color: var(--panel-muted);
+      padding: 1.5%;
+      border-radius: 8px;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.2);
+      position: relative; /* For overlay and focus */
+  }
+  #pick3Grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(12, 1fr);
+    gap: 3px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+  #gridOverlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0, 0, 0, 0.85);
+      color: white; display: none; flex-direction: column;
+      justify-content: center; align-items: center; text-align: center;
+      border-radius: 8px; z-index: 10; backdrop-filter: blur(2px);
+  }
+  .pick3-square {
+    width: 100%; height: 100%; border-radius: 4px; cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+    position: relative;
+    opacity: 0.9;
+  }
+  .pick3-square:hover {
+    opacity: 1;
+  }
+  .pick3-square.selected {
+    outline: 2px solid var(--text);
+    transform: scale(0.9);
+    z-index: 2;
+  }
+  .pick3-square.focused {
+    outline: 2px dashed var(--accent);
+    outline-offset: 2px;
+  }
+  .pick3-square[data-state="empty"] {
+      background-color: transparent !important; cursor: default;
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    class Pick3Game {
+        CONFIG = {
+            ROWS: 12, COLS: 12,
+            // Muted, low-stress colors
+            COLORS: ['#b05b63', '#68748c', '#5b7e94', '#92b3b5', '#c29370', '#b56d5e'],
+        };
+
+        state = {
+            grid: [], score: 0, isChecking: false, isGameOver: false,
+            firstSelected: null, focusedCoord: { r: 0, c: 0 }
+        };
+
+        dom = {
+            gridEl: document.getElementById('pick3Grid'),
+            gridOverlay: document.getElementById('gridOverlay'),
+            scoreEl: document.getElementById('score'),
+            playAgainBtn: document.getElementById('playAgainBtn'),
+        };
+
+        constructor() {
+            this.init();
+        }
+
+        init() {
+            this.resetGame();
+            this.bindEvents();
+        }
+
+        resetGame() {
+            this.state.isGameOver = false;
+            this.state.isChecking = true;
+            if (this.dom.gridOverlay) this.dom.gridOverlay.style.display = 'none';
+            this.state.score = 0;
+            this.updateScore(0);
+
+            if (this.dom.gridEl) this.dom.gridEl.innerHTML = '';
+            
+            this.state.grid = Array(this.CONFIG.ROWS).fill(null).map(() => Array(this.CONFIG.COLS).fill(null));
+
+            const frag = document.createDocumentFragment();
+            for (let r = 0; r < this.CONFIG.ROWS; r++) {
+                for (let c = 0; c < this.CONFIG.COLS; c++) {
+                    const color = this.CONFIG.COLORS[Math.floor(Math.random() * this.CONFIG.COLORS.length)];
+                    const tileEl = this.createTile(r, c, color, 'active');
+                    this.state.grid[r][c] = { el: tileEl, color: color, state: 'active' };
+                    frag.appendChild(tileEl);
+                }
+            }
+            if (this.dom.gridEl) this.dom.gridEl.appendChild(frag);
+            this.setFocus(0, 0);
+
+            setTimeout(() => this.processMatches(this.findMatches()), 100);
+        }
+
+        bindEvents() {
+            if (this.dom.gridEl) {
+                this.dom.gridEl.addEventListener('click', (e) => {
+                    const target = e.target as HTMLElement;
+                    const tile = target.closest('.pick3-square') as HTMLElement;
+                    if (tile) {
+                        const r = parseInt(tile.dataset.row || '0', 10);
+                        const c = parseInt(tile.dataset.col || '0', 10);
+                        this.handleSelection(r, c);
+                    }
+                });
+                this.dom.gridEl.addEventListener('keydown', this.handleKeyDown.bind(this));
+            }
+            if (this.dom.playAgainBtn) {
+                this.dom.playAgainBtn.addEventListener('click', this.resetGame.bind(this));
+            }
+        }
+
+        async handleSelection(r: number, c: number) {
+            if (this.state.isChecking || this.state.isGameOver || this.state.grid[r][c].state !== 'active') return;
+
+            this.setFocus(r, c);
+            const currentTile = this.state.grid[r][c];
+
+            if (!this.state.firstSelected) {
+                this.state.firstSelected = currentTile;
+                currentTile.el.classList.add('selected');
+                return;
+            }
+
+            if (this.state.firstSelected === currentTile) {
+                this.state.firstSelected.el.classList.remove('selected');
+                this.state.firstSelected = null;
+                return;
+            }
+            
+            const { r: r1, c: c1 } = this.getCoords(this.state.firstSelected.el);
+            
+            const rowDiff = Math.abs(r1 - r);
+            const colDiff = Math.abs(c1 - c);
+            
+            if ((rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1)) {
+                await this.swapAndCheck(this.state.firstSelected, currentTile);
+            } else {
+                this.state.firstSelected.el.classList.remove('selected');
+                this.state.firstSelected = currentTile;
+                currentTile.el.classList.add('selected');
+            }
+        }
+
+        handleKeyDown(e: KeyboardEvent) {
+            if (this.state.isChecking || this.state.isGameOver) return;
+            let { r, c } = this.state.focusedCoord;
+            let moved = false;
+            switch (e.key) {
+                case 'ArrowUp':    if (r > 0) { r--; moved = true; } break;
+                case 'ArrowDown':  if (r < this.CONFIG.ROWS - 1) { r++; moved = true; } break;
+                case 'ArrowLeft':  if (c > 0) { c--; moved = true; } break;
+                case 'ArrowRight': if (c < this.CONFIG.COLS - 1) { c++; moved = true; } break;
+                case ' ': case 'Enter':
+                    e.preventDefault();
+                    this.handleSelection(r, c);
+                    break;
+                default: return;
+            }
+            if (moved) {
+                e.preventDefault();
+                this.setFocus(r, c);
+            }
+        }
+        
+        async swapAndCheck(tile1: any, tile2: any) {
+            this.state.isChecking = true;
+            if (this.state.firstSelected) this.state.firstSelected.el.classList.remove('selected');
+            this.state.firstSelected = null;
+
+            this.swapTiles(tile1, tile2);
+            await new Promise(r => setTimeout(r, 150));
+            
+            const initialMatches = this.findMatches();
+            if (initialMatches.size > 0) {
+                await this.processMatches(initialMatches);
+            } else {
+                this.swapTiles(tile1, tile2);
+                this.state.isChecking = false;
+            }
+        }
+
+        async processMatches(matches: Set<string>) {
+            if (matches.size === 0) {
+                this.state.isChecking = false;
+                if (!this.checkForPossibleMoves()) this.endGame();
+                return;
+            }
+            
+            this.updateScore(matches.size);
+            
+            matches.forEach(coord => this.updateTileState(coord, 'empty'));
+            
+            await new Promise(r => setTimeout(r, 200));
+            await this.applyGravity();
+            await new Promise(r => setTimeout(r, 200));
+
+            await this.processMatches(this.findMatches());
+        }
+
+        findMatches() {
+            const matches = new Set<string>();
+            const grid = this.state.grid;
+            for (let r = 0; r < this.CONFIG.ROWS; r++) {
+                for (let c = 0; c < this.CONFIG.COLS; c++) {
+                    const tile = grid[r][c];
+                    if (tile.state !== 'active') continue;
+                    const color = tile.color;
+
+                    if (c < this.CONFIG.COLS - 2 && grid[r][c+1].color === color && grid[r][c+2].color === color) {
+                        matches.add(`${r},${c}`); matches.add(`${r},${c+1}`); matches.add(`${r},${c+2}`);
+                    }
+                    if (r < this.CONFIG.ROWS - 2 && grid[r+1][c].color === color && grid[r+2][c].color === color) {
+                        matches.add(`${r},${c}`); matches.add(`${r+1},${c}`); matches.add(`${r+2},${c}`);
+                    }
+                }
+            }
+            return matches;
+        }
+
+        async applyGravity() {
+            for (let c = 0; c < this.CONFIG.COLS; c++) {
+                const activeTiles = [];
+                for (let r = this.CONFIG.ROWS - 1; r >= 0; r--) {
+                    const tile = this.state.grid[r][c];
+                    if (tile.state === 'active') activeTiles.push(tile.color);
+                    this.updateTileState(`${r},${c}`, 'empty');
+                }
+                let writeRow = this.CONFIG.ROWS - 1;
+                activeTiles.forEach(color => {
+                    this.updateTileState(`${writeRow},${c}`, 'active', color);
+                    writeRow--;
+                });
+            }
+        }
+
+        checkForPossibleMoves() {
+            for (let r = 0; r < this.CONFIG.ROWS; r++) {
+                for (let c = 0; c < this.CONFIG.COLS; c++) {
+                    if (this.state.grid[r][c].state !== 'active') continue;
+                    if (c < this.CONFIG.COLS - 1 && this.createsMatch(r, c, r, c + 1)) return true;
+                    if (r < this.CONFIG.ROWS - 1 && this.createsMatch(r, c, r + 1, c)) return true;
+                }
+            }
+            return false;
+        }
+        
+        createsMatch(r1: number, c1: number, r2: number, c2: number) {
+            const grid = this.state.grid;
+            if (grid[r2][c2].state !== 'active') return false;
+            
+            [grid[r1][c1].color, grid[r2][c2].color] = [grid[r2][c2].color, grid[r1][c1].color];
+            const hasMatch = (this.checkLine(r1, c1) || this.checkLine(r2, c2));
+            [grid[r1][c1].color, grid[r2][c2].color] = [grid[r2][c2].color, grid[r1][c1].color];
+            
+            return hasMatch;
+        }
+
+        checkLine(r: number, c: number) {
+            const color = this.state.grid[r][c].color;
+            let hCount = 1;
+            for(let i = c - 1; i >= 0 && this.state.grid[r][i].color === color; i--) hCount++;
+            for(let i = c + 1; i < this.CONFIG.COLS && this.state.grid[r][i].color === color; i++) hCount++;
+            if(hCount >= 3) return true;
+
+            let vCount = 1;
+            for(let i = r - 1; i >= 0 && this.state.grid[i][c].color === color; i--) vCount++;
+            for(let i = r + 1; i < this.CONFIG.ROWS && this.state.grid[i][c].color === color; i++) vCount++;
+            if(vCount >= 3) return true;
+            
+            return false;
+        }
+
+        endGame() {
+            if (this.state.isGameOver) return;
+            this.state.isGameOver = true;
+            this.state.isChecking = true;
+            if (this.dom.gridOverlay) this.dom.gridOverlay.style.display = 'flex';
+        }
+
+        createTile(r: number, c: number, color: string, state: string) {
+            const div = document.createElement('div');
+            div.className = 'pick3-square';
+            div.dataset.row = r.toString();
+            div.dataset.col = c.toString();
+            div.id = `tile-${r}-${c}`;
+            div.setAttribute('role', 'gridcell');
+            div.style.backgroundColor = color;
+            return div;
+        }
+        
+        updateTileState(coord: string, state: string, color: string | null = null) {
+            const [r, c] = coord.split(',').map(Number);
+            const tile = this.state.grid[r][c];
+            tile.state = state;
+            tile.color = color;
+            tile.el.dataset.state = state;
+            tile.el.style.backgroundColor = state === 'active' ? (color as string) : '';
+            tile.el.setAttribute('aria-label', `${color || state}`);
+        }
+        
+        swapTiles(tile1: any, tile2: any) {
+            const { r: r1, c: c1 } = this.getCoords(tile1.el);
+            const { r: r2, c: c2 } = this.getCoords(tile2.el);
+            [tile1.color, tile2.color] = [tile2.color, tile1.color];
+            this.updateTileState(`${r1},${c1}`, 'active', tile1.color);
+            this.updateTileState(`${r2},${c2}`, 'active', tile2.color);
+        }
+        
+        getCoords(tileElement: HTMLElement) {
+            return { r: parseInt(tileElement.dataset.row || '0', 10), c: parseInt(tileElement.dataset.col || '0', 10) };
+        }
+        
+        setFocus(r: number, c: number) {
+            const oldCoord = this.state.focusedCoord;
+            if (this.state.grid[oldCoord.r]?.[oldCoord.c]) {
+                this.state.grid[oldCoord.r][oldCoord.c].el.classList.remove('focused');
+            }
+            this.state.focusedCoord = { r, c };
+            const newTile = this.state.grid[r][c];
+            newTile.el.classList.add('focused');
+            if (this.dom.gridEl) this.dom.gridEl.setAttribute('aria-activedescendant', newTile.el.id);
+        }
+        
+        updateScore(points: number) { 
+            this.state.score += Math.round(points); 
+            if (this.dom.scoreEl) {
+                this.dom.scoreEl.textContent = `Score: ${this.state.score}`; 
+            }
+        }
+    }
+
+    new Pick3Game();
+});
+</script>

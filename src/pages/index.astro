@@ -1,30 +1,16 @@
 ---
-import FeedPagination from "../components/FeedPagination.astro";
-import PostFeed from "../components/PostFeed.astro";
-import { site } from "../data/site";
-import { getPublishedPosts } from "../lib/posts";
-import { getFeedPage } from "../lib/pagination";
-import BaseLayout from "../layouts/BaseLayout.astro";
-
-const feed = getFeedPage(await getPublishedPosts(), 1);
+import ToolCard from '../components/ToolCard.astro';
+import { tools } from '../data/tools';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
-
-<BaseLayout title={site.name} description={site.description} canonicalPath="/">
-  <section class="home-hero">
-    <div class="home-hero__copy">
-      <p class="eyebrow">Public notebook and publication site</p>
-      <h1>{site.name}</h1>
-      <p>Long-form essays, notes, analysis, and project writing.</p>
-    </div>
-    <img class="home-hero__mark" src="/images/site/fooliosity-mark.svg" alt="" width="180" height="180" />
-  </section>
-
-  <section class="content-section feed-section" aria-labelledby="latest-posts">
-    <div class="section-heading">
-      <h2 id="latest-posts">Latest</h2>
-      <a href="/archive/">Archive</a>
-    </div>
-    <PostFeed posts={feed.posts} />
-    <FeedPagination currentPage={feed.currentPage} totalPages={feed.totalPages} />
-  </section>
+<BaseLayout title="Fooliosity">
+  <main class="shell">
+    <section class="hero text-center pt-5 pb-4">
+      <h1>Time Wasters</h1>
+      <p class="lead text-muted">A collection of simple games and toys to pass the time.</p>
+    </section>
+    <section class="tool-grid" aria-label="Available tools">
+      {tools.map((tool) => <ToolCard tool={tool} />)}
+    </section>
+  </main>
 </BaseLayout>
