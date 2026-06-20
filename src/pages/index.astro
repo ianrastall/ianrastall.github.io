@@ -1,37 +1,141 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-// You can keep adding the rest of your 25 repos directly to this list
 const repos = [
   {
-    name: 'AudioPrep',
-    description: 'A WPF-based audio mastering suite for high-fidelity mixing, target LUFS, and tempo shifting.',
-    url: 'https://github.com/ianrastall/AudioPrep'
+    name: 'advanced-search',
+    description: 'An advanced search interface application for querying Google Web, Images, News, and YouTube with specific parameters.',
+    url: 'https://github.com/ianrastall/advanced-search'
+  },
+  {
+    name: 'ai-written',
+    description: 'An archive repository containing books and monographs entirely authored by Large Language Models.',
+    url: 'https://github.com/ianrastall/ai-written'
+  },
+  {
+    name: 'audio-stretch',
+    description: 'A graphical user interface leveraging rubberband-r3, FFmpeg, and FFprobe, specifically focused on high-fidelity audio tempo shifting and manipulation.',
+    url: 'https://github.com/ianrastall/audio-stretch'
+  },
+  {
+    name: 'bahai-daybook',
+    description: 'A collection of daily readings and formatted texts for Baha\'is.',
+    url: 'https://github.com/ianrastall/bahai-daybook'
+  },
+  {
+    name: 'BlogCreator',
+    description: 'A graphical utility designed to manage workflows and format content for the Fooliosity blog.',
+    url: 'https://github.com/ianrastall/BlogCreator'
+  },
+  {
+    name: 'bookstacks',
+    description: 'A Jekyll-based static site for curating digital archives of public domain literature, converted into standardized digital formats and narrated videos.',
+    url: 'https://github.com/ianrastall/bookstacks'
+  },
+  {
+    name: 'ccc-archive',
+    description: 'An archive of compressed Portable Game Notation (PGN) files from the Chess.com Computer Chess Championship.',
+    url: 'https://github.com/ianrastall/ccc-archive'
+  },
+  {
+    name: 'chessnerd',
+    description: 'A static website and resource hub hosting chess reference tools, data browsers, and engine game dumps.',
+    url: 'https://github.com/ianrastall/chessnerd'
+  },
+  {
+    name: 'ColorChooser',
+    description: 'A development utility for selecting named colors, creating custom color profiles, and outputting hex or RGB values formatted for multiple programming languages.',
+    url: 'https://github.com/ianrastall/ColorChooser'
+  },
+  {
+    name: 'current-events-context',
+    description: 'A technical repository actively maintained to provide structured context and data to LLMs, particularly for events occurring past standard knowledge cutoff dates.',
+    url: 'https://github.com/ianrastall/current-events-context'
+  },
+  {
+    name: 'enter-gate',
+    description: 'A background system utility that intercepts keyboard inputs, requiring the Enter key to be pressed twice sequentially to register.',
+    url: 'https://github.com/ianrastall/enter-gate'
+  },
+  {
+    name: 'h-monitor',
+    description: 'A centralized local hub designed for managing, organizing, and viewing system and application help files.',
+    url: 'https://github.com/ianrastall/h-monitor'
+  },
+  {
+    name: 'ianrastall.github.io',
+    description: 'The root repository for this GitHub Pages portfolio, acting as a front page for open-source projects and utilities.',
+    url: 'https://github.com/ianrastall/ianrastall.github.io'
+  },
+  {
+    name: 'largest-files',
+    description: 'A storage scanning utility that searches local drives to identify the 50 largest files, outputting the results directly to a text file.',
+    url: 'https://github.com/ianrastall/largest-files'
+  },
+  {
+    name: 'lichess-puzzles',
+    description: 'A Windows desktop application that processes the full Lichess database, creating a local SQLite database to practice puzzles sharded by Glicko2/Elo ratings.',
+    url: 'https://github.com/ianrastall/lichess-puzzles'
+  },
+  {
+    name: 'MDEdit',
+    description: 'A lightweight, streamlined text editor built specifically for authoring and modifying Markdown files.',
+    url: 'https://github.com/ianrastall/MDEdit'
+  },
+  {
+    name: 'MDViewer',
+    description: 'A document conversion and viewing tool that imports various formats into Markdown, applies formatting, and exports to multiple file types.',
+    url: 'https://github.com/ianrastall/MDViewer'
+  },
+  {
+    name: 'misc-chess-projects',
+    description: 'A repository for housing various ongoing chess-related development experiments, including experimental engine setups and partial utilities.',
+    url: 'https://github.com/ianrastall/misc-chess-projects'
+  },
+  {
+    name: 'Multi-Lang-Windows-Tools',
+    description: 'A collection of system utilities and automation tools for Windows, heavily ported across multiple programming languages.',
+    url: 'https://github.com/ianrastall/Multi-Lang-Windows-Tools'
+  },
+  {
+    name: 'PgnSort',
+    description: 'A lightweight graphical user interface built for sorting and organizing chess games within a PGN database.',
+    url: 'https://github.com/ianrastall/PgnSort'
+  },
+  {
+    name: 'PgnTools',
+    description: 'A comprehensive suite of tools for processing chess games, managing database utilities, and handling FIDE rating datasets.',
+    url: 'https://github.com/ianrastall/PgnTools'
+  },
+  {
+    name: 'PgnTours',
+    description: 'An archive of historical and competitive chess tournaments stored in PGN format, complete with tournament crosstables.',
+    url: 'https://github.com/ianrastall/PgnTours'
+  },
+  {
+    name: 'StockfishCompiler',
+    description: 'A graphical user interface designed to automate the process of compiling the Stockfish chess engine from source code.',
+    url: 'https://github.com/ianrastall/StockfishCompiler'
+  },
+  {
+    name: 'text-utils',
+    description: 'A suite of JavaScript-based tools for standalone text formatting, data manipulation, and string processing workflows.',
+    url: 'https://github.com/ianrastall/text-utils'
+  },
+  {
+    name: 'titled-tuesday-archive',
+    description: 'An organized, renamed, and sorted repository of PGN files archiving Chess.com Titled Tuesday events.',
+    url: 'https://github.com/ianrastall/titled-tuesday-archive'
+  },
+  {
+    name: 'twic-db-aggregator',
+    description: 'An updated, modernized version of a legacy chess freeware tool designed to aggregate issues of The Week In Chess (TWIC) database.',
+    url: 'https://github.com/ianrastall/twic-db-aggregator'
   },
   {
     name: 'Dungeon',
     description: 'Ongoing game development project.',
     url: 'https://github.com/ianrastall/Dungeon'
-  },
-  {
-    name: 'Bookstacks',
-    description: 'Curated digital archives of public domain literature, converted into standardized formats and narrated videos.',
-    url: 'https://github.com/ianrastall/bookstacks'
-  },
-  {
-    name: 'PgnTools',
-    description: 'Utilities for processing chess games and managing FIDE rating databases.',
-    url: 'https://github.com/ianrastall/PgnTools'
-  },
-  {
-    name: 'current-events-context',
-    description: 'Technical repository for tracking and contextualizing current events.',
-    url: 'https://github.com/ianrastall/current-events-context'
-  },
-  {
-    name: 'Robot Chess',
-    description: 'Software tools and opening suites for engine matchups.',
-    url: 'https://github.com/ianrastall/RobotChess'
   }
 ];
 ---
@@ -39,16 +143,16 @@ const repos = [
   <main class="shell">
     <section class="hero text-center pt-5 pb-4">
       <h1>My Repositories</h1>
-      <p class="lead text-muted">A collection of my open-source projects, utilities, and software experiments.</p>
+      <p class="lead text-muted">An overview of my open-source projects, software utilities, and archives.</p>
     </section>
-
+    
     <section class="repo-grid" aria-label="GitHub Repositories">
       {repos.map((repo) => (
         <div class="repo-box">
           <h2>{repo.name}</h2>
           <p>{repo.description}</p>
           <a href={repo.url} target="_blank" rel="noopener noreferrer" class="repo-link">
-            View on GitHub &rarr;
+            View Repository &rarr;
           </a>
         </div>
       ))}
@@ -57,6 +161,67 @@ const repos = [
 </BaseLayout>
 
 <style>
+  /* Global Dark Mode Overrides */
+  :global(body) {
+    background-color: #121212 !important;
+    color: #e0e0e0 !important;
+  }
+  
+  :global(.text-muted) {
+    color: #a0aec0 !important;
+  }
+
+  .repo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem 0;
+  }
+  
+  .repo-box {
+    border: 1px solid #333333;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background-color: #1e1e1e;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .repo-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
+    border-color: #555555;
+  }
+  
+  .repo-box h2 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+    color: #ffffff;
+  }
+  
+  .repo-box p {
+    flex-grow: 1;
+    color: #cccccc;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+  }
+  
+  .repo-link {
+    display: inline-block;
+    font-weight: 600;
+    color: #90caf9;
+    text-decoration: none;
+    align-self: flex-start;
+  }
+  
+  .repo-link:hover {
+    color: #64b5f6;
+    text-decoration: underline;
+  }
+
   .text-center {
     text-align: center;
   }
@@ -77,59 +242,5 @@ const repos = [
 
   .lead {
     font-size: 1.08rem;
-  }
-
-  .text-muted {
-    color: var(--muted);
-  }
-
-  .repo-grid {
-    display: grid;
-    /* This automatically creates a responsive grid of boxes */
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    padding: 2rem 0;
-  }
-
-  .repo-box {
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 1.5rem;
-    background-color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .repo-box:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  }
-
-  .repo-box h2 {
-    margin-top: 0;
-    margin-bottom: 0.75rem;
-    font-size: 1.25rem;
-    color: #1a202c;
-  }
-
-  .repo-box p {
-    flex-grow: 1;
-    color: #4a5568;
-    line-height: 1.5;
-    margin-bottom: 1.5rem;
-  }
-
-  .repo-link {
-    display: inline-block;
-    font-weight: 600;
-    color: #3182ce;
-    text-decoration: none;
-    align-self: flex-start;
-  }
-
-  .repo-link:hover {
-    text-decoration: underline;
   }
 </style>
