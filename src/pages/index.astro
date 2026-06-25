@@ -32,17 +32,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script>
+  interface GitHubRepo {
+    name: string;
+    description: string | null;
+    html_url: string;
+    language: string | null;
+    pushed_at: string | null;
+    stargazers_count: number;
+    forks_count: number;
+    private: boolean;
+    archived: boolean;
+    fork: boolean;
+  }
+
   const grid = document.getElementById('repo-grid');
   const error = document.getElementById('repo-error');
 
   const repoEndpoint =
     'https://api.github.com/users/ianrastall/repos?type=owner&sort=pushed&direction=desc&per_page=20';
 
-  const excludedRepos = new Set([
+  const excludedRepos = new Set<string>([
     'ianrastall.github.io'
   ]);
 
-  function formatDate(value) {
+  function formatDate(value: string | null): string {
     if (!value) return 'Unknown date';
 
     const date = new Date(value);
@@ -55,7 +68,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }).format(date);
   }
 
-  function escapeHtml(value) {
+  function escapeHtml(value: unknown): string {
     return String(value ?? '')
       .replaceAll('&', '&amp;')
       .replaceAll('<', '&lt;')
@@ -64,25 +77,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .replaceAll("'", '&#039;');
   }
 
-  function repoDescription(repo) {
+  function repoDescription(repo: GitHubRepo): string {
     return repo.description?.trim() || 'No repository description has been added yet.';
   }
 
-  function repoMeta(repo) {
-    const parts = [];
+  function repoMeta(repo: GitHubRepo): string[] {
+    const parts: string[] = [];
 
     if (repo.language) {
       parts.push(escapeHtml(repo.language));
     }
 
     parts.push(`Updated ${escapeHtml(formatDate(repo.pushed_at))}`);
-    parts.push(`★ ${Number(repo.stargazers_count ?? 0).toLocaleString()}`);
-    parts.push(`Forks ${Number(repo.forks_count ?? 0).toLocaleString()}`);
+    parts.push(`★ ${repo.stargazers_count.toLocaleString()}`);
+    parts.push(`Forks ${repo.forks_count.toLocaleString()}`);
 
     return parts;
   }
 
-  function renderRepo(repo) {
+  function renderRepo(repo: GitHubRepo): string {
     const meta = repoMeta(repo);
 
     return `
@@ -93,7 +106,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </div>
 
         <ul class="repo-meta" aria-label="Repository metadata">
-          ${meta.map((item) => `<li>${item}</li>`).join('')}
+          ${meta.map((item: string) => `<li>${item}</li>`).join('')}
         </ul>
 
         <a href="${escapeHtml(repo.html_url)}" target="_blank" rel="noopener noreferrer" class="repo-link">
@@ -103,7 +116,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     `;
   }
 
-  async function loadRecentRepos() {
+  async function loadRecentRepos(): Promise<void> {
     if (!grid) return;
 
     try {
@@ -117,13 +130,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         throw new Error(`GitHub API returned ${response.status}`);
       }
 
-      const repos = await response.json();
+      const repos = (await response.json()) as GitHubRepo[];
 
       const recentRepos = repos
-        .filter((repo) => !repo.private)
-        .filter((repo) => !repo.archived)
-        .filter((repo) => !repo.fork)
-        .filter((repo) => !excludedRepos.has(repo.name))
+        .filter((repo: GitHubRepo) => !repo.private)
+        .filter((repo: GitHubRepo) => !repo.archived)
+        .filter((repo: GitHubRepo) => !repo.fork)
+        .filter((repo: GitHubRepo) => !excludedRepos.has(repo.name))
         .slice(0, 5);
 
       if (recentRepos.length === 0) {
@@ -131,7 +144,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       grid.innerHTML = recentRepos.map(renderRepo).join('');
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
       grid.innerHTML = '';
       if (error) error.hidden = false;
