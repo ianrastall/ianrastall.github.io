@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="A single-page, searchable quick reference for common PowerShell commands: files, navigation, system info, processes, networking, and more." />
+<title>PowerShell Quick Reference</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f5f6f8;
+    --panel: #ffffff;
+    --panel-muted: #eef0f3;
+    --text: #1b1f24;
+    --muted: #5b6472;
+    --border: #dde1e6;
+    --accent: #0b63c5;
+    --accent-strong: #084a94;
+    --code-bg: #eef2f7;
+    --code-text: #103a6b;
+    --shadow: 0 1px 2px rgba(20, 24, 30, 0.06), 0 8px 24px rgba(20, 24, 30, 0.05);
+    --header-h: 0px;
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #14161a;
+    --panel: #1c1f24;
+    --panel-muted: #23272e;
+    --text: #e7e9ec;
+    --muted: #9aa3af;
+    --border: #2c313a;
+    --accent: #5aa4f2;
+    --accent-strong: #82bdfb;
+    --code-bg: #0f2338;
+    --code-text: #bcdcff;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161a;
+      --panel: #1c1f24;
+      --panel-muted: #23272e;
+      --text: #e7e9ec;
+      --muted: #9aa3af;
+      --border: #2c313a;
+      --accent: #5aa4f2;
+      --accent-strong: #82bdfb;
+      --code-bg: #0f2338;
+      --code-text: #bcdcff;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow-x: hidden;
+  }
+
+  code, .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  a { color: var(--accent); }
+  a:hover { color: var(--accent-strong); }
+
+  .shell {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+  }
+
+  header.top {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0.9rem 0;
+  }
+
+  header.top .row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  header.top h1 {
+    font-size: 1.15rem;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .search-wrap {
+    flex: 1 1 240px;
+    position: relative;
+  }
+
+  #search {
+    width: 100%;
+    padding: 0.55rem 0.8rem 0.55rem 2.1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+
+  #search:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .search-wrap::before {
+    content: "🔎";
+    position: absolute;
+    left: 0.65rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.85rem;
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  #theme-toggle, #clear-search {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  #theme-toggle:hover, #clear-search:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .intro {
+    padding: 1.25rem 0 0.5rem;
+  }
+
+  .intro p {
+    color: var(--muted);
+    max-width: 70ch;
+    line-height: 1.55;
+    margin: 0.3rem 0 0;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem 0 1.25rem;
+    position: sticky;
+    top: var(--header-h);
+    background: var(--bg);
+    z-index: 15;
+  }
+
+  .chip {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    line-height: 1.2;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+
+  .chip:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  main {
+    padding-bottom: 3rem;
+  }
+
+  .category {
+    margin: 1.75rem 0;
+  }
+
+  .category h2 {
+    font-size: 1.05rem;
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .category h2 .count {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  thead th {
+    text-align: left;
+    background: var(--panel-muted);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.6rem 0.9rem;
+  }
+
+  tbody tr {
+    border-top: 1px solid var(--border);
+  }
+
+  tbody tr:hover {
+    background: var(--panel-muted);
+  }
+
+  td {
+    padding: 0.65rem 0.9rem;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  td.cmd {
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  td.alias {
+    color: var(--muted);
+    white-space: nowrap;
+    font-size: 0.85rem;
+  }
+
+  td.example {
+    min-width: 260px;
+  }
+
+  .example-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .example-row code {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    flex: 1;
+  }
+
+  .copy-btn {
+    flex: 0 0 auto;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+
+  .copy-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .copy-btn.copied {
+    color: #1a9c5c;
+    border-color: #1a9c5c;
+  }
+
+  td.desc {
+    color: var(--text);
+  }
+
+  #empty-state, #alias-note {
+    color: var(--muted);
+    padding: 2rem 0;
+    text-align: center;
+  }
+
+  #alias-note {
+    text-align: left;
+    padding: 0 0 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 0 2.5rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  footer a { color: var(--muted); text-decoration: underline; }
+  footer a:hover { color: var(--accent); }
+
+  @media (max-width: 640px) {
+    header.top h1 { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top" id="top-header">
+  <div class="shell row">
+    <h1>PowerShell Quick Reference</h1>
+    <div class="search-wrap">
+      <input id="search" type="text" placeholder="Search commands, aliases, or descriptions…" autocomplete="off" />
+    </div>
+    <button id="clear-search" type="button" title="Clear search">Clear</button>
+    <button id="theme-toggle" type="button">Theme</button>
+  </div>
+</header>
+
+<div class="shell intro">
+  <p>A no-nonsense cheat sheet for the PowerShell commands people actually reach for day to day: moving around the
+  filesystem, reading and writing files, checking system info, and poking at processes, services, and the network.
+  Search below, or filter by category. Click <span class="mono">Copy</span> next to any example to grab it.</p>
+</div>
+
+<div class="shell chips" id="chips"></div>
+
+<main class="shell" id="main"></main>
+
+<div id="empty-state" class="shell" hidden>No commands match your search.</div>
+
+<footer class="shell">
+  <p>Reference only — always sanity-check destructive commands (<span class="mono">Remove-Item</span>,
+  <span class="mono">Stop-Process</span>, registry edits) before running them against anything you care about.</p>
+</footer>
+
+<script>
+(() => {
+  const data = [
+    // Navigation & Files
+    { cat: "Navigation & Files", cmd: "Get-Location", alias: "pwd, gl", example: "Get-Location", desc: "Show the current working directory." },
+    { cat: "Navigation & Files", cmd: "Set-Location", alias: "cd, sl, chdir", example: 'Set-Location C:\\Users\\Ian\\Documents', desc: "Change the current directory." },
+    { cat: "Navigation & Files", cmd: "Set-Location ..", alias: "cd ..", example: "Set-Location ..", desc: "Move up one directory level." },
+    { cat: "Navigation & Files", cmd: "Get-ChildItem", alias: "ls, dir, gci", example: "Get-ChildItem", desc: "List files and folders in the current directory." },
+    { cat: "Navigation & Files", cmd: "Get-ChildItem -Force", alias: "ls -Force", example: "Get-ChildItem -Force", desc: "List files and folders, including hidden and system items." },
+    { cat: "Navigation & Files", cmd: "Get-ChildItem -Recurse", alias: "ls -r", example: 'Get-ChildItem -Recurse -Filter "*.log"', desc: "List files recursively, optionally filtered by name or extension." },
+    { cat: "Navigation & Files", cmd: "tree", alias: "tree /F", example: "tree /F", desc: "Print a visual folder tree; add /F to include file names." },
+    { cat: "Navigation & Files", cmd: "New-Item (folder)", alias: "mkdir, md", example: 'New-Item -ItemType Directory -Path "NewFolder"', desc: "Create a new directory." },
+    { cat: "Navigation & Files", cmd: "New-Item (file)", alias: "ni, touch", example: 'New-Item -ItemType File -Path "notes.txt"', desc: "Create a new empty file." },
+    { cat: "Navigation & Files", cmd: "Copy-Item", alias: "cp, copy, cpi", example: 'Copy-Item .\\report.docx D:\\Backup\\ -Recurse', desc: "Copy a file or folder (use -Recurse for folders)." },
+    { cat: "Navigation & Files", cmd: "Move-Item", alias: "mv, move, mi", example: 'Move-Item .\\draft.txt .\\Archive\\', desc: "Move (or rename, if the destination is a new name) a file or folder." },
+    { cat: "Navigation & Files", cmd: "Rename-Item", alias: "ren, rni", example: 'Rename-Item .\\old.txt new.txt', desc: "Rename a file or folder in place." },
+    { cat: "Navigation & Files", cmd: "Remove-Item", alias: "rm, del, erase, rd", example: 'Remove-Item .\\temp\\ -Recurse -Force', desc: "Delete a file or folder. -Recurse for folders, -Force for hidden/read-only items." },
+    { cat: "Navigation & Files", cmd: "Test-Path", alias: "", example: 'Test-Path C:\\Data\\report.csv', desc: "Check whether a file or folder exists; returns True or False." },
+    { cat: "Navigation & Files", cmd: "Invoke-Item", alias: "ii", example: 'Invoke-Item .\\report.pdf', desc: "Open a file with its default associated application." },
+    { cat: "Navigation & Files", cmd: "Start-Process", alias: "start, saps", example: 'Start-Process notepad "C:\\notes.txt"', desc: "Launch an application, optionally with a file or arguments." },
+    { cat: "Navigation & Files", cmd: "code / notepad", alias: "", example: 'code .\\index.html', desc: "Open a file (or the current folder, for VS Code) in an editor." },
+
+    // Reading & Writing Files
+    { cat: "Reading & Writing Files", cmd: "Get-Content", alias: "cat, type, gc", example: 'Get-Content .\\log.txt', desc: "Print the contents of a text file." },
+    { cat: "Reading & Writing Files", cmd: "Get-Content -Tail", alias: "", example: 'Get-Content .\\log.txt -Tail 20 -Wait', desc: "Show the last N lines and keep watching for new lines (like tail -f)." },
+    { cat: "Reading & Writing Files", cmd: "Set-Content", alias: "sc", example: 'Set-Content .\\notes.txt "Hello there"', desc: "Overwrite a file's contents with the given text." },
+    { cat: "Reading & Writing Files", cmd: "Add-Content", alias: "ac", example: 'Add-Content .\\notes.txt "Another line"', desc: "Append text to the end of a file." },
+    { cat: "Reading & Writing Files", cmd: "Out-File", alias: "", example: 'Get-Process | Out-File processes.txt', desc: "Send pipeline output to a text file." },
+    { cat: "Reading & Writing Files", cmd: "Get-FileHash", alias: "", example: 'Get-FileHash .\\install.exe -Algorithm SHA256', desc: "Compute a file's checksum for integrity verification." },
+
+    // Searching Files & Text
+    { cat: "Searching Files & Text", cmd: "Select-String", alias: "sls, grep", example: 'Select-String -Path .\\*.log -Pattern "error"', desc: "Search files for lines matching a pattern (case-insensitive by default)." },
+    { cat: "Searching Files & Text", cmd: "Get-ChildItem + Select-String", alias: "", example: 'Get-ChildItem -Recurse -Filter *.cs | Select-String "TODO"', desc: "Search recursively across many files for a piece of text." },
+    { cat: "Searching Files & Text", cmd: "Where-Object filter", alias: "?, where", example: 'Get-ChildItem | Where-Object Length -gt 1MB', desc: "Filter a list of files (or any objects) by a condition." },
+    { cat: "Searching Files & Text", cmd: "-replace", alias: "", example: '(Get-Content .\\file.txt) -replace "foo","bar" | Set-Content .\\file.txt', desc: "Find-and-replace text in a file's contents." },
+
+    // Archives
+    { cat: "Archives", cmd: "Compress-Archive", alias: "", example: 'Compress-Archive -Path .\\Project\\* -DestinationPath project.zip', desc: "Zip up a folder or set of files." },
+    { cat: "Archives", cmd: "Expand-Archive", alias: "", example: 'Expand-Archive -Path project.zip -DestinationPath .\\Project', desc: "Unzip an archive to a folder." },
+
+    // System Information
+    { cat: "System Information", cmd: "Get-ComputerInfo", alias: "", example: "Get-ComputerInfo", desc: "Dump a large, detailed report of OS, BIOS, and hardware info." },
+    { cat: "System Information", cmd: "Get-ComputerInfo (filtered)", alias: "", example: 'Get-ComputerInfo | Select-Object OsName, OsVersion, CsSystemType', desc: "Pull just the fields you care about from Get-ComputerInfo." },
+    { cat: "System Information", cmd: "systeminfo", alias: "", example: "systeminfo", desc: "Classic (non-PowerShell) system summary; still handy and fast." },
+    { cat: "System Information", cmd: "$PSVersionTable", alias: "", example: "$PSVersionTable", desc: "Show the installed PowerShell version and edition." },
+    { cat: "System Information", cmd: "Get-CimInstance Win32_OperatingSystem", alias: "", example: "Get-CimInstance Win32_OperatingSystem", desc: "OS name, version, build, install date, and more." },
+    { cat: "System Information", cmd: "Get-CimInstance Win32_ComputerSystem", alias: "", example: "Get-CimInstance Win32_ComputerSystem", desc: "Manufacturer, model, and total physical memory." },
+    { cat: "System Information", cmd: "Get-CimInstance Win32_BIOS", alias: "", example: "Get-CimInstance Win32_BIOS", desc: "BIOS/firmware version and serial number." },
+    { cat: "System Information", cmd: "Get-CimInstance Win32_Processor", alias: "", example: "Get-CimInstance Win32_Processor", desc: "CPU name, core count, and clock speed." },
+    { cat: "System Information", cmd: "Get-HotFix", alias: "", example: "Get-HotFix", desc: "List installed Windows updates (KB patches)." },
+    { cat: "System Information", cmd: "Get-Date", alias: "", example: 'Get-Date -Format "yyyy-MM-dd HH:mm:ss"', desc: "Show the current date and time, optionally formatted." },
+
+    // Processes & Services
+    { cat: "Processes & Services", cmd: "Get-Process", alias: "ps, gps", example: "Get-Process", desc: "List all running processes." },
+    { cat: "Processes & Services", cmd: "Get-Process (by name)", alias: "", example: 'Get-Process -Name chrome', desc: "List running processes matching a name." },
+    { cat: "Processes & Services", cmd: "Stop-Process", alias: "kill, spps", example: 'Stop-Process -Name chrome -Force', desc: "Force-terminate a process by name or ID." },
+    { cat: "Processes & Services", cmd: "Get-Service", alias: "gsv", example: "Get-Service", desc: "List all Windows services and their status." },
+    { cat: "Processes & Services", cmd: "Get-Service (by name)", alias: "", example: 'Get-Service -Name Spooler', desc: "Show the status of a specific service." },
+    { cat: "Processes & Services", cmd: "Start-Service", alias: "sasv", example: 'Start-Service -Name Spooler', desc: "Start a stopped service." },
+    { cat: "Processes & Services", cmd: "Stop-Service", alias: "spsv", example: 'Stop-Service -Name Spooler', desc: "Stop a running service." },
+    { cat: "Processes & Services", cmd: "Restart-Service", alias: "", example: 'Restart-Service -Name Spooler', desc: "Restart a service." },
+
+    // Networking
+    { cat: "Networking", cmd: "Test-Connection", alias: "ping", example: 'Test-Connection google.com', desc: "Ping a host to check connectivity and latency." },
+    { cat: "Networking", cmd: "Test-NetConnection", alias: "tnc", example: 'Test-NetConnection google.com -Port 443', desc: "Test reachability of a host on a specific port." },
+    { cat: "Networking", cmd: "ipconfig", alias: "", example: "ipconfig /all", desc: "Show detailed IP configuration for all network adapters." },
+    { cat: "Networking", cmd: "Get-NetIPAddress", alias: "", example: "Get-NetIPAddress -AddressFamily IPv4", desc: "List IPv4 addresses assigned to this machine." },
+    { cat: "Networking", cmd: "Get-NetAdapter", alias: "", example: "Get-NetAdapter", desc: "List network adapters and their link status." },
+    { cat: "Networking", cmd: "Resolve-DnsName", alias: "nslookup", example: "Resolve-DnsName example.com", desc: "Look up DNS records for a hostname." },
+    { cat: "Networking", cmd: "Get-NetTCPConnection", alias: "netstat", example: "Get-NetTCPConnection -State Listen", desc: "List active TCP connections and listening ports." },
+    { cat: "Networking", cmd: "Invoke-WebRequest", alias: "iwr, curl, wget", example: 'Invoke-WebRequest -Uri https://example.com -OutFile page.html', desc: "Download a file or fetch a web page from the command line." },
+
+    // Software & Packages
+    { cat: "Software & Packages", cmd: "winget list", alias: "", example: "winget list", desc: "List installed applications known to the Windows Package Manager." },
+    { cat: "Software & Packages", cmd: "winget search", alias: "", example: 'winget search "vscode"', desc: "Search for an application in configured package sources." },
+    { cat: "Software & Packages", cmd: "winget install", alias: "", example: "winget install Microsoft.VisualStudioCode", desc: "Install an application by its package ID." },
+    { cat: "Software & Packages", cmd: "winget upgrade", alias: "", example: "winget upgrade --all", desc: "Upgrade every installed package that has an available update." },
+    { cat: "Software & Packages", cmd: "Get-Package", alias: "", example: "Get-Package", desc: "List software packages registered with PowerShell's package management." },
+
+    // Environment & Variables
+    { cat: "Environment & Variables", cmd: "Get-ChildItem Env:", alias: "", example: "Get-ChildItem Env:", desc: "List all environment variables." },
+    { cat: "Environment & Variables", cmd: "$env:VarName", alias: "", example: '$env:PATH -split ";"', desc: "Read an environment variable (here, split PATH into individual entries)." },
+    { cat: "Environment & Variables", cmd: "Set variable (session)", alias: "", example: '$env:MY_VAR = "value"', desc: "Set an environment variable for the current PowerShell session only." },
+    { cat: "Environment & Variables", cmd: "Set variable (permanent)", alias: "", example: '[Environment]::SetEnvironmentVariable("MY_VAR","value","User")', desc: "Set a persistent environment variable for the current user." },
+    { cat: "Environment & Variables", cmd: "$PROFILE", alias: "", example: "notepad $PROFILE", desc: "Open your PowerShell profile script (runs on every new session)." },
+
+    // Users & Permissions
+    { cat: "Users & Permissions", cmd: "whoami", alias: "", example: "whoami", desc: "Show the currently logged-in user." },
+    { cat: "Users & Permissions", cmd: "whoami /groups", alias: "", example: "whoami /groups", desc: "Show the groups and privileges of the current user." },
+    { cat: "Users & Permissions", cmd: "Get-LocalUser", alias: "", example: "Get-LocalUser", desc: "List local user accounts on this machine." },
+    { cat: "Users & Permissions", cmd: "Get-LocalGroupMember", alias: "", example: "Get-LocalGroupMember -Group Administrators", desc: "List members of a local group, e.g. Administrators." },
+    { cat: "Users & Permissions", cmd: "icacls", alias: "", example: 'icacls "C:\\Data" /grant Ian:F', desc: "View or change file/folder permissions (ACLs)." },
+
+    // Disk & Storage
+    { cat: "Disk & Storage", cmd: "Get-PSDrive", alias: "", example: "Get-PSDrive -PSProvider FileSystem", desc: "List drives with free/used space." },
+    { cat: "Disk & Storage", cmd: "Get-Volume", alias: "", example: "Get-Volume", desc: "List volumes with size, free space, and file system type." },
+    { cat: "Disk & Storage", cmd: "Folder size", alias: "", example: "Get-ChildItem -Recurse | Measure-Object -Property Length -Sum", desc: "Add up the total size of everything in the current folder tree." },
+    { cat: "Disk & Storage", cmd: "Largest files", alias: "", example: "Get-ChildItem -Recurse | Sort-Object Length -Descending | Select-Object -First 10", desc: "Find the 10 largest files under the current folder." },
+
+    // Scheduled Tasks & Startup
+    { cat: "Scheduled Tasks & Startup", cmd: "Get-ScheduledTask", alias: "", example: "Get-ScheduledTask | Where-Object State -eq Ready", desc: "List scheduled tasks (optionally filtered by state)." },
+    { cat: "Scheduled Tasks & Startup", cmd: "Start-ScheduledTask", alias: "", example: 'Start-ScheduledTask -TaskName "Backup"', desc: "Manually run a scheduled task now." },
+    { cat: "Scheduled Tasks & Startup", cmd: "Startup programs", alias: "", example: "Get-CimInstance Win32_StartupCommand", desc: "List programs configured to launch at sign-in." },
+
+    // Clipboard
+    { cat: "Clipboard", cmd: "Get-Clipboard", alias: "gcb", example: "Get-Clipboard", desc: "Print whatever is currently on the clipboard." },
+    { cat: "Clipboard", cmd: "Set-Clipboard", alias: "scb", example: 'Set-Clipboard "Text to copy"', desc: "Copy text (or command output) to the clipboard." },
+
+    // Pipeline & Data
+    { cat: "Pipeline & Data", cmd: "Select-Object", alias: "select", example: 'Get-Process | Select-Object Name, Id, CPU', desc: "Pick specific properties (columns) from a set of objects." },
+    { cat: "Pipeline & Data", cmd: "Where-Object", alias: "where, ?", example: 'Get-Process | Where-Object CPU -gt 100', desc: "Filter a list of objects by a condition." },
+    { cat: "Pipeline & Data", cmd: "Sort-Object", alias: "sort", example: 'Get-Process | Sort-Object CPU -Descending', desc: "Sort a list of objects by one or more properties." },
+    { cat: "Pipeline & Data", cmd: "Group-Object", alias: "group", example: 'Get-Process | Group-Object Company', desc: "Group objects by a shared property value." },
+    { cat: "Pipeline & Data", cmd: "Measure-Object", alias: "measure", example: 'Get-Process | Measure-Object CPU -Sum -Average', desc: "Compute count, sum, average, min, or max over a set of objects." },
+    { cat: "Pipeline & Data", cmd: "ForEach-Object", alias: "%, foreach", example: 'Get-ChildItem | ForEach-Object { $_.Name.ToUpper() }', desc: "Run a script block once for each object in the pipeline." },
+    { cat: "Pipeline & Data", cmd: "Export-Csv", alias: "", example: 'Get-Process | Export-Csv processes.csv -NoTypeInformation', desc: "Save pipeline output as a CSV file." },
+    { cat: "Pipeline & Data", cmd: "Import-Csv", alias: "", example: "Import-Csv data.csv", desc: "Read a CSV file back into objects." },
+    { cat: "Pipeline & Data", cmd: "ConvertTo-Json", alias: "", example: 'Get-Process | Select-Object -First 3 | ConvertTo-Json', desc: "Convert objects to JSON text." },
+    { cat: "Pipeline & Data", cmd: "Out-GridView", alias: "ogv", example: "Get-Process | Out-GridView", desc: "Open a sortable, filterable pop-up grid of the results (Windows only)." },
+
+    // Help & Discovery
+    { cat: "Help & Discovery", cmd: "Get-Command", alias: "gcm", example: 'Get-Command *service*', desc: "Find cmdlets whose name matches a pattern." },
+    { cat: "Help & Discovery", cmd: "Get-Help", alias: "help, man", example: 'Get-Help Get-Process -Examples', desc: "Show usage and examples for a cmdlet." },
+    { cat: "Help & Discovery", cmd: "Get-Help -Full", alias: "", example: "Get-Help Get-Process -Full", desc: "Show the complete help page, including every parameter." },
+    { cat: "Help & Discovery", cmd: "Get-Member", alias: "gm", example: "Get-Process | Get-Member", desc: "List the properties and methods of whatever objects come through the pipeline." },
+    { cat: "Help & Discovery", cmd: "Get-Alias", alias: "gal", example: "Get-Alias gci", desc: "Look up which cmdlet an alias points to." },
+    { cat: "Help & Discovery", cmd: "Update-Help", alias: "", example: "Update-Help", desc: "Download the latest local help files (run once as admin)." },
+
+    // Session & History
+    { cat: "Session & History", cmd: "Get-History", alias: "h, history", example: "Get-History", desc: "Show commands run earlier in this session." },
+    { cat: "Session & History", cmd: "Clear-Host", alias: "cls, clear", example: "Clear-Host", desc: "Clear the terminal screen." },
+    { cat: "Session & History", cmd: "exit", alias: "", example: "exit", desc: "Close the current PowerShell session." },
+  ];
+
+  const aliasCheatSheet = [
+    ["cd", "Set-Location"], ["ls / dir", "Get-ChildItem"], ["cat / type", "Get-Content"],
+    ["rm / del", "Remove-Item"], ["cp / copy", "Copy-Item"], ["mv / move", "Move-Item"],
+    ["pwd", "Get-Location"], ["cls / clear", "Clear-Host"], ["kill", "Stop-Process"],
+    ["ps", "Get-Process"], ["echo", "Write-Output"], ["mkdir / md", "New-Item -ItemType Directory"],
+    ["ren", "Rename-Item"], ["curl / wget", "Invoke-WebRequest"], ["ping", "Test-Connection"],
+    ["man / help", "Get-Help"], ["select", "Select-Object"], ["where / ?", "Where-Object"],
+    ["sort", "Sort-Object"], ["group", "Group-Object"], ["measure", "Measure-Object"],
+    ["foreach / %", "ForEach-Object"], ["gm", "Get-Member"], ["gcm", "Get-Command"],
+  ];
+
+  const categories = [...new Set(data.map(d => d.cat))];
+
+  const chipsEl = document.getElementById("chips");
+  const mainEl = document.getElementById("main");
+  const searchEl = document.getElementById("search");
+  const emptyEl = document.getElementById("empty-state");
+  let activeCategory = "All";
+
+  function makeChip(label) {
+    const btn = document.createElement("button");
+    btn.className = "chip" + (label === activeCategory ? " active" : "");
+    btn.textContent = label;
+    btn.addEventListener("click", () => {
+      activeCategory = label;
+      render();
+    });
+    return btn;
+  }
+
+  function renderChips() {
+    chipsEl.innerHTML = "";
+    chipsEl.appendChild(makeChip("All"));
+    categories.forEach(cat => chipsEl.appendChild(makeChip(cat)));
+    chipsEl.appendChild(makeChip("Aliases Cheat Sheet"));
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+  }
+
+  function matchesSearch(item, term) {
+    if (!term) return true;
+    const haystack = `${item.cmd} ${item.alias} ${item.example} ${item.desc}`.toLowerCase();
+    return haystack.includes(term);
+  }
+
+  function renderAliasTable() {
+    const rows = aliasCheatSheet
+      .filter(([a, b]) => {
+        const term = searchEl.value.trim().toLowerCase();
+        if (!term) return true;
+        return `${a} ${b}`.toLowerCase().includes(term);
+      })
+      .map(([a, b]) => `
+        <tr>
+          <td class="cmd">${escapeHtml(a)}</td>
+          <td class="desc">${escapeHtml(b)}</td>
+        </tr>
+      `).join("");
+
+    return `
+      <section class="category">
+        <h2>Aliases Cheat Sheet <span class="count">${aliasCheatSheet.length} shortcuts</span></h2>
+        <p id="alias-note">Familiar cmd/bash-style shortcuts and the real PowerShell cmdlet behind each one.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Shortcut</th><th>Actual cmdlet</th></tr></thead>
+            <tbody>${rows || ""}</tbody>
+          </table>
+        </div>
+      </section>
+    `;
+  }
+
+  function copyText(text, btn) {
+    navigator.clipboard?.writeText(text).then(() => {
+      btn.textContent = "Copied";
+      btn.classList.add("copied");
+      setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1200);
+    });
+  }
+
+  function render() {
+    const term = searchEl.value.trim().toLowerCase();
+    renderChips();
+
+    if (activeCategory === "Aliases Cheat Sheet") {
+      mainEl.innerHTML = renderAliasTable();
+      emptyEl.hidden = true;
+      attachCopyHandlers();
+      updateStickyOffsets();
+      return;
+    }
+
+    const groups = categories
+      .filter(cat => activeCategory === "All" || activeCategory === cat)
+      .map(cat => ({
+        cat,
+        rows: data.filter(d => d.cat === cat && matchesSearch(d, term))
+      }))
+      .filter(g => g.rows.length > 0);
+
+    if (groups.length === 0) {
+      mainEl.innerHTML = "";
+      emptyEl.hidden = false;
+      updateStickyOffsets();
+      return;
+    }
+    emptyEl.hidden = true;
+
+    mainEl.innerHTML = groups.map(g => `
+      <section class="category">
+        <h2>${escapeHtml(g.cat)} <span class="count">${g.rows.length} command${g.rows.length === 1 ? "" : "s"}</span></h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Command</th><th>Alias</th><th>Example</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+              ${g.rows.map(r => `
+                <tr>
+                  <td class="cmd">${escapeHtml(r.cmd)}</td>
+                  <td class="alias">${escapeHtml(r.alias)}</td>
+                  <td class="example">
+                    <div class="example-row">
+                      <code>${escapeHtml(r.example)}</code>
+                      <button class="copy-btn" type="button" data-text="${escapeHtml(r.example)}">Copy</button>
+                    </div>
+                  </td>
+                  <td class="desc">${escapeHtml(r.desc)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `).join("");
+
+    attachCopyHandlers();
+    updateStickyOffsets();
+  }
+
+  function attachCopyHandlers() {
+    mainEl.querySelectorAll(".copy-btn").forEach(btn => {
+      btn.addEventListener("click", () => copyText(btn.dataset.text, btn));
+    });
+  }
+
+  const topHeaderEl = document.getElementById("top-header");
+
+  function updateStickyOffsets() {
+    document.documentElement.style.setProperty("--header-h", `${topHeaderEl.offsetHeight}px`);
+  }
+
+  let resizeTimer;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(updateStickyOffsets, 100);
+  });
+
+  searchEl.addEventListener("input", render);
+  document.getElementById("clear-search").addEventListener("click", () => {
+    searchEl.value = "";
+    searchEl.focus();
+    render();
+  });
+
+  // Theme toggle
+  const stored = localStorage.getItem("ps-ref-theme");
+  if (stored) document.documentElement.dataset.theme = stored;
+  document.getElementById("theme-toggle").addEventListener("click", () => {
+    const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+    const current = document.documentElement.dataset.theme || (prefersDark ? "dark" : "light");
+    const next = current === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem("ps-ref-theme", next);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

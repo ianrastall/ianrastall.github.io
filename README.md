@@ -1,39 +1,28 @@
-# Ian Rastall Repositories
+# ianrastall.github.io
 
-This repository contains the source for Ian Rastall's public GitHub Pages landing page at `https://ianrastall.github.io`.
+Source for Ian Rastall's public GitHub Pages site at `https://ianrastall.github.io`.
 
-The site is a single Astro page with standalone repository boxes that link directly to GitHub projects.
-
-It is built as a static site using [Astro](https://astro.build) and published automatically to GitHub Pages.
-
-## Usage and deployment
-
-1. Push changes to the `main` branch.
-2. A GitHub Action will build the site and deploy it.
-3. The site is live at `https://ianrastall.github.io`.
+The site is a single standalone HTML file — [index.html](index.html) — with embedded CSS and
+JavaScript, and no build step. It's a searchable quick reference for common PowerShell commands
+(navigation, files, system info, processes, networking, and more).
 
 ## Local development
 
-To run the site locally on Windows using VS Code and PowerShell:
+No install or build step is required. To preview:
 
-1. Clone the repository.
-2. Install dependencies:
-   ```powershell
-   npm install
-   ```
-3. Start the local server:
-   ```powershell
-   npm run dev
-   ```
-   Open `http://127.0.0.1:4321` in your browser.
+```powershell
+# From the repo root, open the file directly...
+start index.html
 
-## Other commands
+# ...or serve it so relative paths behave exactly like production:
+python -m http.server 8000
+```
 
-- Build the production output locally:
-  ```powershell
-  npm run build
-  ```
-- Run typechecking and validation:
-  ```powershell
-  npm run check
-  ```
+Then edit `index.html` directly — the reference data lives in the `data` array near the top of
+its `<script>` block.
+
+## Deployment
+
+Pushes to `main` trigger [.github/workflows/deploy.yml](.github/workflows/deploy.yml), which
+publishes the repository root straight to GitHub Pages via GitHub Actions. There is nothing to
+build or bundle.

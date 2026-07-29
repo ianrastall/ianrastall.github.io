@@ -1,25 +1,3 @@
-node_modules/
-dist/
-.astro/
-
-# Local logs
-*.log
-.astro-preview*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Local environment files
-.env
-.env.*
-!.env.example
-
-# Test and tooling output
-coverage/
-playwright-report/
-test-results/
-
 # Editor and OS noise
 .vscode/
 .DS_Store
