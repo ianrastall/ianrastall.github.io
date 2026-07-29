@@ -378,9 +378,9 @@
     { cat: "Navigation & Files", cmd: "Get-ChildItem", alias: "ls, dir, gci", example: "Get-ChildItem", desc: "List files and folders in the current directory." },
     { cat: "Navigation & Files", cmd: "Get-ChildItem -Force", alias: "ls -Force", example: "Get-ChildItem -Force", desc: "List files and folders, including hidden and system items." },
     { cat: "Navigation & Files", cmd: "Get-ChildItem -Recurse", alias: "ls -r", example: 'Get-ChildItem -Recurse -Filter "*.log"', desc: "List files recursively, optionally filtered by name or extension." },
-    { cat: "Navigation & Files", cmd: "tree", alias: "tree /F", example: "tree /F", desc: "Print a visual folder tree; add /F to include file names." },
+    { cat: "Navigation & Files", cmd: "tree", alias: "", example: "tree /F", desc: "Print a visual folder tree; add /F to include file names. (Native cmd.exe command, no PowerShell alias.)" },
     { cat: "Navigation & Files", cmd: "New-Item (folder)", alias: "mkdir, md", example: 'New-Item -ItemType Directory -Path "NewFolder"', desc: "Create a new directory." },
-    { cat: "Navigation & Files", cmd: "New-Item (file)", alias: "ni, touch", example: 'New-Item -ItemType File -Path "notes.txt"', desc: "Create a new empty file." },
+    { cat: "Navigation & Files", cmd: "New-Item (file)", alias: "ni", example: 'New-Item -ItemType File -Path "notes.txt"', desc: "Create a new empty file." },
     { cat: "Navigation & Files", cmd: "Copy-Item", alias: "cp, copy, cpi", example: 'Copy-Item .\\report.docx D:\\Backup\\ -Recurse', desc: "Copy a file or folder (use -Recurse for folders)." },
     { cat: "Navigation & Files", cmd: "Move-Item", alias: "mv, move, mi", example: 'Move-Item .\\draft.txt .\\Archive\\', desc: "Move (or rename, if the destination is a new name) a file or folder." },
     { cat: "Navigation & Files", cmd: "Rename-Item", alias: "ren, rni", example: 'Rename-Item .\\old.txt new.txt', desc: "Rename a file or folder in place." },
@@ -399,9 +399,9 @@
     { cat: "Reading & Writing Files", cmd: "Get-FileHash", alias: "", example: 'Get-FileHash .\\install.exe -Algorithm SHA256', desc: "Compute a file's checksum for integrity verification." },
 
     // Searching Files & Text
-    { cat: "Searching Files & Text", cmd: "Select-String", alias: "sls, grep", example: 'Select-String -Path .\\*.log -Pattern "error"', desc: "Search files for lines matching a pattern (case-insensitive by default)." },
+    { cat: "Searching Files & Text", cmd: "Select-String", alias: "sls", example: 'Select-String -Path .\\*.log -Pattern "error"', desc: "Search files for lines matching a pattern (case-insensitive by default)." },
     { cat: "Searching Files & Text", cmd: "Get-ChildItem + Select-String", alias: "", example: 'Get-ChildItem -Recurse -Filter *.cs | Select-String "TODO"', desc: "Search recursively across many files for a piece of text." },
-    { cat: "Searching Files & Text", cmd: "Where-Object filter", alias: "?, where", example: 'Get-ChildItem | Where-Object Length -gt 1MB', desc: "Filter a list of files (or any objects) by a condition." },
+    { cat: "Searching Files & Text", cmd: "Where-Object", alias: "?, where", example: 'Get-ChildItem | Where-Object Length -gt 1MB', desc: "Filter a list of files (or any objects) by a condition." },
     { cat: "Searching Files & Text", cmd: "-replace", alias: "", example: '(Get-Content .\\file.txt) -replace "foo","bar" | Set-Content .\\file.txt', desc: "Find-and-replace text in a file's contents." },
 
     // Archives
@@ -431,14 +431,14 @@
     { cat: "Processes & Services", cmd: "Restart-Service", alias: "", example: 'Restart-Service -Name Spooler', desc: "Restart a service." },
 
     // Networking
-    { cat: "Networking", cmd: "Test-Connection", alias: "ping", example: 'Test-Connection google.com', desc: "Ping a host to check connectivity and latency." },
+    { cat: "Networking", cmd: "Test-Connection", alias: "", example: 'Test-Connection google.com', desc: "Ping a host to check connectivity and latency. (Native equivalent: ping.)" },
     { cat: "Networking", cmd: "Test-NetConnection", alias: "tnc", example: 'Test-NetConnection google.com -Port 443', desc: "Test reachability of a host on a specific port." },
     { cat: "Networking", cmd: "ipconfig", alias: "", example: "ipconfig /all", desc: "Show detailed IP configuration for all network adapters." },
     { cat: "Networking", cmd: "Get-NetIPAddress", alias: "", example: "Get-NetIPAddress -AddressFamily IPv4", desc: "List IPv4 addresses assigned to this machine." },
     { cat: "Networking", cmd: "Get-NetAdapter", alias: "", example: "Get-NetAdapter", desc: "List network adapters and their link status." },
-    { cat: "Networking", cmd: "Resolve-DnsName", alias: "nslookup", example: "Resolve-DnsName example.com", desc: "Look up DNS records for a hostname." },
-    { cat: "Networking", cmd: "Get-NetTCPConnection", alias: "netstat", example: "Get-NetTCPConnection -State Listen", desc: "List active TCP connections and listening ports." },
-    { cat: "Networking", cmd: "Invoke-WebRequest", alias: "iwr, curl, wget", example: 'Invoke-WebRequest -Uri https://example.com -OutFile page.html', desc: "Download a file or fetch a web page from the command line." },
+    { cat: "Networking", cmd: "Resolve-DnsName", alias: "", example: "Resolve-DnsName example.com", desc: "Look up DNS records for a hostname. (Native equivalent: nslookup.)" },
+    { cat: "Networking", cmd: "Get-NetTCPConnection", alias: "", example: "Get-NetTCPConnection -State Listen", desc: "List active TCP connections and listening ports. (Native equivalent: netstat.)" },
+    { cat: "Networking", cmd: "Invoke-WebRequest", alias: "iwr", example: 'Invoke-WebRequest -Uri https://example.com -OutFile page.html', desc: "Download a file or fetch a web page from the command line. (Not curl/wget — those aliases were removed in PowerShell 7 to avoid shadowing the real curl.exe/wget.exe.)" },
 
     // Software & Packages
     { cat: "Software & Packages", cmd: "winget list", alias: "", example: "winget list", desc: "List installed applications known to the Windows Package Manager." },
@@ -477,6 +477,7 @@
     { cat: "Clipboard", cmd: "Set-Clipboard", alias: "scb", example: 'Set-Clipboard "Text to copy"', desc: "Copy text (or command output) to the clipboard." },
 
     // Pipeline & Data
+    { cat: "Pipeline & Data", cmd: "Write-Output", alias: "echo, write", example: 'Write-Output "Hello there"', desc: "Send an object down the pipeline (usually printed to the console)." },
     { cat: "Pipeline & Data", cmd: "Select-Object", alias: "select", example: 'Get-Process | Select-Object Name, Id, CPU', desc: "Pick specific properties (columns) from a set of objects." },
     { cat: "Pipeline & Data", cmd: "Where-Object", alias: "where, ?", example: 'Get-Process | Where-Object CPU -gt 100', desc: "Filter a list of objects by a condition." },
     { cat: "Pipeline & Data", cmd: "Sort-Object", alias: "sort", example: 'Get-Process | Sort-Object CPU -Descending', desc: "Sort a list of objects by one or more properties." },
@@ -502,16 +503,27 @@
     { cat: "Session & History", cmd: "exit", alias: "", example: "exit", desc: "Close the current PowerShell session." },
   ];
 
-  const aliasCheatSheet = [
-    ["cd", "Set-Location"], ["ls / dir", "Get-ChildItem"], ["cat / type", "Get-Content"],
-    ["rm / del", "Remove-Item"], ["cp / copy", "Copy-Item"], ["mv / move", "Move-Item"],
-    ["pwd", "Get-Location"], ["cls / clear", "Clear-Host"], ["kill", "Stop-Process"],
-    ["ps", "Get-Process"], ["echo", "Write-Output"], ["mkdir / md", "New-Item -ItemType Directory"],
-    ["ren", "Rename-Item"], ["curl / wget", "Invoke-WebRequest"], ["ping", "Test-Connection"],
-    ["man / help", "Get-Help"], ["select", "Select-Object"], ["where / ?", "Where-Object"],
-    ["sort", "Sort-Object"], ["group", "Group-Object"], ["measure", "Measure-Object"],
-    ["foreach / %", "ForEach-Object"], ["gm", "Get-Member"], ["gcm", "Get-Command"],
-  ];
+  // Derived from data[].alias so the cheat sheet can never drift out of sync with
+  // the per-command Alias column above (each entry lists only real PowerShell aliases).
+  function baseCmdName(cmd) {
+    return cmd.split(/\s+(?=[-(])/)[0];
+  }
+
+  const aliasCheatSheet = (() => {
+    const seen = new Set();
+    const pairs = [];
+    data.forEach(d => {
+      if (!d.alias) return;
+      const target = baseCmdName(d.cmd);
+      d.alias.split(",").map(a => a.trim()).filter(Boolean).forEach(alias => {
+        const key = `${alias}|${target}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        pairs.push([alias, target]);
+      });
+    });
+    return pairs.sort((a, b) => a[0].localeCompare(b[0]));
+  })();
 
   const categories = [...new Set(data.map(d => d.cat))];
 
