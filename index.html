@@ -1,791 +1,707 @@
----
-// src/pages/index.astro
----
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Keyboard Shortcuts Reference</title>
-  
-  <style is:global>
-    /*
-      Fallback palette only.
-      Run extract_powerpoint_theme.py against a Dune-themed .pptx/.potx/.thmx
-      to replace this file with the exact Office theme colors.
-    */
-    :root {
-      --bg: #141210;
-      --bg-elevated: #1b1815;
-      --panel: #1f1b17;
-      --panel-alt: #24201b;
-      --text: #f0e6d2;
-      --muted: #b9ab94;
-      --faint: #817665;
-      --border: #4d4438;
-      --border-strong: #6b5b45;
-      --accent: #c79a5a;
-      --accent-2: #9f7442;
-      --accent-soft: rgba(199, 154, 90, .13);
-      --kbd-bg: #2a241e;
-      --kbd-border: #6c5942;
-      --kbd-text: #f4ead8;
-      --danger: #d27c70;
-      --shadow: rgba(0, 0, 0, .28);
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="A single-page, searchable quick reference for common PowerShell commands: files, navigation, system info, processes, networking, and more." />
+<title>PowerShell Quick Reference</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f5f6f8;
+    --panel: #ffffff;
+    --panel-muted: #eef0f3;
+    --text: #1b1f24;
+    --muted: #5b6472;
+    --border: #dde1e6;
+    --accent: #0b63c5;
+    --accent-strong: #084a94;
+    --code-bg: #eef2f7;
+    --code-text: #103a6b;
+    --shadow: 0 1px 2px rgba(20, 24, 30, 0.06), 0 8px 24px rgba(20, 24, 30, 0.05);
+    --header-h: 0px;
+  }
 
-  <style is:global>
-    * { box-sizing: border-box; }
-    html { color-scheme: dark; scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
-      font-size: 15px;
-      line-height: 1.35;
-    }
+  :root[data-theme="dark"] {
+    --bg: #14161a;
+    --panel: #1c1f24;
+    --panel-muted: #23272e;
+    --text: #e7e9ec;
+    --muted: #9aa3af;
+    --border: #2c313a;
+    --accent: #5aa4f2;
+    --accent-strong: #82bdfb;
+    --code-bg: #0f2338;
+    --code-text: #bcdcff;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
 
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      background: color-mix(in srgb, var(--bg) 94%, transparent);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border);
-      box-shadow: 0 8px 28px var(--shadow);
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161a;
+      --panel: #1c1f24;
+      --panel-muted: #23272e;
+      --text: #e7e9ec;
+      --muted: #9aa3af;
+      --border: #2c313a;
+      --accent: #5aa4f2;
+      --accent-strong: #82bdfb;
+      --code-bg: #0f2338;
+      --code-text: #bcdcff;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
     }
-    .topbar__inner {
-      display: grid;
-      grid-template-columns: max-content minmax(340px, 1fr) max-content max-content;
-      gap: 10px;
-      align-items: center;
-      padding: 12px 18px 8px;
-    }
-    .brand {
-      font-weight: 680;
-      letter-spacing: .01em;
-      color: var(--accent);
-      white-space: nowrap;
-    }
-    .search {
-      display: grid;
-      grid-template-columns: max-content 1fr;
-      align-items: center;
-      min-width: 0;
-      border: 1px solid var(--border-strong);
-      background: var(--panel);
-      border-radius: 7px;
-      overflow: hidden;
-    }
-    .search__label {
-      padding: 0 10px;
-      color: var(--muted);
-      border-right: 1px solid var(--border);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-    }
-    .search input {
-      width: 100%;
-      min-width: 0;
-      border: 0;
-      outline: 0;
-      padding: 9px 11px;
-      color: var(--text);
-      background: transparent;
-      font: inherit;
-    }
-    .search input::placeholder { color: var(--faint); }
-    .button {
-      border: 1px solid var(--border-strong);
-      border-radius: 6px;
-      background: var(--panel);
-      color: var(--muted);
-      padding: 8px 10px;
-      font: inherit;
-      cursor: pointer;
-    }
-    .button:hover { color: var(--text); border-color: var(--accent-2); }
+  }
 
-    .section-nav {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      padding: 0 18px 10px;
-      scrollbar-width: thin;
-    }
-    .section-nav a {
-      flex: none;
-      color: var(--muted);
-      text-decoration: none;
-      border: 1px solid var(--border);
-      background: var(--bg-elevated);
-      border-radius: 999px;
-      padding: 4px 8px;
-      font-size: 12px;
-    }
-    .section-nav a:hover { color: var(--text); border-color: var(--accent-2); }
+  * { box-sizing: border-box; }
 
-    .content {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      padding: 14px 18px 22px;
-      align-items: start;
-    }
-    .section {
-      scroll-margin-top: 110px;
-      border: 1px solid var(--border);
-      background: var(--panel);
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 14px rgba(0,0,0,.12);
-    }
-    .section[open] { border-color: var(--border-strong); }
-    .section summary {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-      cursor: pointer;
-      user-select: none;
-      list-style: none;
-      padding: 9px 11px;
-      color: var(--accent);
-      background: var(--panel-alt);
-      border-bottom: 1px solid transparent;
-      font-weight: 650;
-    }
-    .section[open] summary { border-bottom-color: var(--border); }
-    .section summary::-webkit-details-marker { display: none; }
-    .section__count { color: var(--faint); font-weight: 500; font-size: 12px; }
-    .section__note {
-      margin: 0;
-      padding: 7px 11px;
-      color: var(--muted);
-      background: var(--accent-soft);
-      border-bottom: 1px solid var(--border);
-      font-size: 12px;
-    }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow-x: hidden;
+  }
 
-    .shortcut-table {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
-    }
-    .shortcut-table col:first-child { width: 42%; }
-    .shortcut-table th,
-    .shortcut-table td {
-      padding: 5px 9px;
-      text-align: left;
-      vertical-align: top;
-      border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
-    }
-    .shortcut-table tr:last-child td { border-bottom: 0; }
-    .shortcut-table th {
-      position: sticky;
-      top: 90px;
-      z-index: 2;
-      color: var(--muted);
-      background: var(--bg-elevated);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .07em;
-      font-weight: 600;
-    }
-    .shortcut-table tbody tr:hover { background: var(--accent-soft); }
-    .shortcut-table td:first-child {
-      color: var(--kbd-text);
-      font-family: "Cascadia Mono", "Cascadia Code", Consolas, monospace;
-      white-space: normal;
-    }
-    kbd.combo {
-      display: inline-block;
-      max-width: 100%;
-      border: 1px solid var(--kbd-border);
-      border-bottom-width: 2px;
-      border-radius: 5px;
-      background: var(--kbd-bg);
-      color: var(--kbd-text);
-      padding: 1px 6px 2px;
-      font: inherit;
-      overflow-wrap: anywhere;
-    }
-    .action { color: var(--text); }
-    .context { display: block; margin-top: 2px; color: var(--faint); font-size: 11px; }
-    .no-results {
-      grid-column: 1 / -1;
-      padding: 40px;
-      text-align: center;
-      color: var(--muted);
-    }
-    .footer {
-      display: flex;
-      justify-content: center;
-      gap: 7px;
-      padding: 10px 18px 22px;
-      color: var(--faint);
-      font-size: 12px;
-    }
+  code, .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
 
-    @media (min-width: 2200px) {
-      body { font-size: 14px; }
-      .content { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
-      .topbar__inner, .section-nav, .content { padding-left: 26px; padding-right: 26px; }
-    }
-    @media (max-width: 1200px) {
-      .content { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-    @media (max-width: 760px) {
-      .topbar__inner { grid-template-columns: 1fr auto; }
-      .brand { grid-column: 1 / -1; }
-      .search { grid-column: 1 / -1; }
-      .content { grid-template-columns: 1fr; padding: 10px; }
-      .section-nav { padding-left: 10px; padding-right: 10px; }
-      .shortcut-table col:first-child { width: 46%; }
-    }
+  a { color: var(--accent); }
+  a:hover { color: var(--accent-strong); }
 
-    /* Render mode used by render_reference.py */
-    body.wallpaper .topbar { position: static; box-shadow: none; }
-    body.wallpaper .button { display: none; }
-    body.wallpaper .content { padding-top: 10px; }
-    body.wallpaper .section summary { cursor: default; }
-    body.wallpaper .shortcut-table th { position: static; }
-  </style>
+  .shell {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+  }
+
+  header.top {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0.9rem 0;
+  }
+
+  header.top .row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  header.top h1 {
+    font-size: 1.15rem;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .search-wrap {
+    flex: 1 1 240px;
+    position: relative;
+  }
+
+  #search {
+    width: 100%;
+    padding: 0.55rem 0.8rem 0.55rem 2.1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+
+  #search:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .search-wrap::before {
+    content: "🔎";
+    position: absolute;
+    left: 0.65rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.85rem;
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  #theme-toggle, #clear-search {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  #theme-toggle:hover, #clear-search:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .intro {
+    padding: 1.25rem 0 0.5rem;
+  }
+
+  .intro p {
+    color: var(--muted);
+    max-width: 70ch;
+    line-height: 1.55;
+    margin: 0.3rem 0 0;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem 0 1.25rem;
+    position: sticky;
+    top: var(--header-h);
+    background: var(--bg);
+    z-index: 15;
+  }
+
+  .chip {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    line-height: 1.2;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+
+  .chip:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  main {
+    padding-bottom: 3rem;
+  }
+
+  .table-wrap {
+    margin: 1.75rem 0;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+  }
+
+  .category-header td {
+    padding: 1.5rem 0.9rem 0.5rem;
+    border-bottom: 2px solid var(--border);
+    background: var(--panel);
+  }
+
+  .category-header h2 {
+    font-size: 1.05rem;
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .category-header h2 .count {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  thead th {
+    text-align: left;
+    background: var(--panel-muted);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.6rem 0.9rem;
+  }
+
+  tbody tr {
+    border-top: 1px solid var(--border);
+  }
+
+  tbody tr:hover {
+    background: var(--panel-muted);
+  }
+
+  td {
+    padding: 0.65rem 0.9rem;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  td.cmd {
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  td.alias {
+    color: var(--muted);
+    white-space: nowrap;
+    font-size: 0.85rem;
+  }
+
+  td.example {
+    min-width: 260px;
+  }
+
+  .example-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .example-row code {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    flex: 1;
+  }
+
+  .copy-btn {
+    flex: 0 0 auto;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+
+  .copy-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .copy-btn.copied {
+    color: #1a9c5c;
+    border-color: #1a9c5c;
+  }
+
+  td.desc {
+    color: var(--text);
+  }
+
+  #empty-state, #alias-note {
+    color: var(--muted);
+    padding: 2rem 0;
+    text-align: center;
+  }
+
+  #alias-note {
+    text-align: left;
+    padding: 0 0 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 0 2.5rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  footer a { color: var(--muted); text-decoration: underline; }
+  footer a:hover { color: var(--accent); }
+
+  @media (max-width: 640px) {
+    header.top h1 { font-size: 1rem; }
+  }
+</style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar__inner">
-      <div class="brand">Keyboard Shortcuts</div>
-      <label class="search">
-        <span class="search__label">Search</span>
-        <input id="search" type="search" autocomplete="off" placeholder="Shortcut or action — e.g. Ctrl+Shift+P, reopen tab, rename…">
-      </label>
-      <button id="collapseAll" class="button" type="button">Collapse all</button>
-      <button id="expandAll" class="button" type="button">Expand all</button>
+
+<header class="top" id="top-header">
+  <div class="shell row">
+    <h1>PowerShell Quick Reference</h1>
+    <div class="search-wrap">
+      <input id="search" type="text" placeholder="Search commands, aliases, or descriptions…" autocomplete="off" />
     </div>
-    <nav class="section-nav">
-      <a href="#windows-11">Windows</a>
-      <a href="#file-explorer">Explorer</a>
-      <a href="#youtube">YouTube</a>
-      <a href="#google-chrome">Chrome</a>
-      <a href="#mozilla-firefox">Firefox</a>
-      <a href="#visual-studio-code">VS Code</a>
-      <a href="#notepad">Notepad++</a>
-      <a href="#microsoft-word">Word</a>
-      <a href="#foobar2000">foobar2000</a>
-      <a href="#tmpgenc-video-mastering-works-7">TMPGEnc VMW7</a>
-      <a href="#windows-terminal-powershell">Terminal / PS</a>
-      <a href="#common-text-editing">Text</a>
-    </nav>
-  </header>
-  
-  <main id="content" class="content">
-    <details class="section" id="windows-11" open>
-      <summary><span>Windows 11</span><span class="section__count">41 shortcuts</span></summary>
-      <table class="shortcut-table"><colgroup><col><col></colgroup><thead><tr><th>Shortcut</th><th>Action</th></tr></thead><tbody>
-        <tr data-search="windows 11 win + a open quick settings "><td><kbd class="combo">Win + A</kbd></td><td><span class="action">Open Quick Settings</span></td></tr>
-        <tr data-search="windows 11 win + b set focus to the first icon in the taskbar corner "><td><kbd class="combo">Win + B</kbd></td><td><span class="action">Set focus to the first icon in the taskbar corner</span></td></tr>
-        <tr data-search="windows 11 win + d show or hide the desktop "><td><kbd class="combo">Win + D</kbd></td><td><span class="action">Show or hide the desktop</span></td></tr>
-        <tr data-search="windows 11 win + e open file explorer "><td><kbd class="combo">Win + E</kbd></td><td><span class="action">Open File Explorer</span></td></tr>
-        <tr data-search="windows 11 win + g open xbox game bar "><td><kbd class="combo">Win + G</kbd></td><td><span class="action">Open Xbox Game Bar</span></td></tr>
-        <tr data-search="windows 11 win + h open voice typing "><td><kbd class="combo">Win + H</kbd></td><td><span class="action">Open voice typing</span></td></tr>
-        <tr data-search="windows 11 win + i open settings "><td><kbd class="combo">Win + I</kbd></td><td><span class="action">Open Settings</span></td></tr>
-        <tr data-search="windows 11 win + k open cast from quick settings "><td><kbd class="combo">Win + K</kbd></td><td><span class="action">Open Cast from Quick Settings</span></td></tr>
-        <tr data-search="windows 11 win + l lock the pc "><td><kbd class="combo">Win + L</kbd></td><td><span class="action">Lock the PC</span></td></tr>
-        <tr data-search="windows 11 win + m minimize all windows "><td><kbd class="combo">Win + M</kbd></td><td><span class="action">Minimize all windows</span></td></tr>
-        <tr data-search="windows 11 win + shift + m restore minimized windows "><td><kbd class="combo">Win + Shift + M</kbd></td><td><span class="action">Restore minimized windows</span></td></tr>
-        <tr data-search="windows 11 win + n open notification center and calendar "><td><kbd class="combo">Win + N</kbd></td><td><span class="action">Open notification center and calendar</span></td></tr>
-        <tr data-search="windows 11 win + p choose a display / projection mode "><td><kbd class="combo">Win + P</kbd></td><td><span class="action">Choose a display / projection mode</span></td></tr>
-        <tr data-search="windows 11 win + r open run "><td><kbd class="combo">Win + R</kbd></td><td><span class="action">Open Run</span></td></tr>
-        <tr data-search="windows 11 win + s open search "><td><kbd class="combo">Win + S</kbd></td><td><span class="action">Open Search</span></td></tr>
-        <tr data-search="windows 11 win + u open accessibility settings "><td><kbd class="combo">Win + U</kbd></td><td><span class="action">Open Accessibility settings</span></td></tr>
-        <tr data-search="windows 11 win + v open clipboard history "><td><kbd class="combo">Win + V</kbd></td><td><span class="action">Open clipboard history</span></td></tr>
-        <tr data-search="windows 11 win + w open widgets "><td><kbd class="combo">Win + W</kbd></td><td><span class="action">Open Widgets</span></td></tr>
-        <tr data-search="windows 11 win + x open the quick link menu "><td><kbd class="combo">Win + X</kbd></td><td><span class="action">Open the Quick Link menu</span></td></tr>
-        <tr data-search="windows 11 win + z open snap layouts "><td><kbd class="combo">Win + Z</kbd></td><td><span class="action">Open Snap layouts</span></td></tr>
-        <tr data-search="windows 11 win + . open emoji / symbol panel "><td><kbd class="combo">Win + .</kbd></td><td><span class="action">Open emoji / symbol panel</span></td></tr>
-        <tr data-search="windows 11 win + , temporarily peek at the desktop "><td><kbd class="combo">Win + ,</kbd></td><td><span class="action">Temporarily peek at the desktop</span></td></tr>
-        <tr data-search="windows 11 win + pause open system &gt; about "><td><kbd class="combo">Win + Pause</kbd></td><td><span class="action">Open System &gt; About</span></td></tr>
-        <tr data-search="windows 11 win + shift + s capture a screen region to the clipboard "><td><kbd class="combo">Win + Shift + S</kbd></td><td><span class="action">Capture a screen region to the clipboard</span></td></tr>
-        <tr data-search="windows 11 win + prtscn save a full-screen screenshot "><td><kbd class="combo">Win + PrtScn</kbd></td><td><span class="action">Save a full-screen screenshot</span></td></tr>
-        <tr data-search="windows 11 alt + prtscn copy the active window screenshot "><td><kbd class="combo">Alt + PrtScn</kbd></td><td><span class="action">Copy the active window screenshot</span></td></tr>
-        <tr data-search="windows 11 alt + tab switch between open windows "><td><kbd class="combo">Alt + Tab</kbd></td><td><span class="action">Switch between open windows</span></td></tr>
-        <tr data-search="windows 11 win + tab open task view "><td><kbd class="combo">Win + Tab</kbd></td><td><span class="action">Open Task View</span></td></tr>
-        <tr data-search="windows 11 ctrl + shift + esc open task manager "><td><kbd class="combo">Ctrl + Shift + Esc</kbd></td><td><span class="action">Open Task Manager</span></td></tr>
-        <tr data-search="windows 11 alt + f4 close the active window "><td><kbd class="combo">Alt + F4</kbd></td><td><span class="action">Close the active window</span></td></tr>
-        <tr data-search="windows 11 alt + space open the active window menu "><td><kbd class="combo">Alt + Space</kbd></td><td><span class="action">Open the active window menu</span></td></tr>
-        <tr data-search="windows 11 win + left snap the active window left "><td><kbd class="combo">Win + Left</kbd></td><td><span class="action">Snap the active window left</span></td></tr>
-        <tr data-search="windows 11 win + right snap the active window right "><td><kbd class="combo">Win + Right</kbd></td><td><span class="action">Snap the active window right</span></td></tr>
-        <tr data-search="windows 11 win + up maximize / move the snapped window upward "><td><kbd class="combo">Win + Up</kbd></td><td><span class="action">Maximize / move the snapped window upward</span></td></tr>
-        <tr data-search="windows 11 win + down restore or minimize the active window "><td><kbd class="combo">Win + Down</kbd></td><td><span class="action">Restore or minimize the active window</span></td></tr>
-        <tr data-search="windows 11 win + shift + left / right move the active window to another monitor "><td><kbd class="combo">Win + Shift + Left / Right</kbd></td><td><span class="action">Move the active window to another monitor</span></td></tr>
-        <tr data-search="windows 11 win + ctrl + d create a new virtual desktop "><td><kbd class="combo">Win + Ctrl + D</kbd></td><td><span class="action">Create a new virtual desktop</span></td></tr>
-        <tr data-search="windows 11 win + ctrl + left / right switch virtual desktops "><td><kbd class="combo">Win + Ctrl + Left / Right</kbd></td><td><span class="action">Switch virtual desktops</span></td></tr>
-        <tr data-search="windows 11 win + ctrl + f4 close the current virtual desktop "><td><kbd class="combo">Win + Ctrl + F4</kbd></td><td><span class="action">Close the current virtual desktop</span></td></tr>
-        <tr data-search="windows 11 win + 1…9 open or switch to the corresponding pinned taskbar app "><td><kbd class="combo">Win + 1…9</kbd></td><td><span class="action">Open or switch to the corresponding pinned taskbar app</span></td></tr>
-        <tr data-search="windows 11 win + shift + 1…9 open a new instance of the corresponding pinned app "><td><kbd class="combo">Win + Shift + 1…9</kbd></td><td><span class="action">Open a new instance of the corresponding pinned app</span></td></tr>
-      </tbody></table>
-    </details>
+    <button id="clear-search" type="button" title="Clear search">Clear</button>
+    <button id="theme-toggle" type="button">Theme</button>
+  </div>
+</header>
 
-    <details class="section" id="file-explorer" open>
-      <summary><span>File Explorer</span><span class="section__count">33 shortcuts</span></summary>
-      <table class="shortcut-table"><colgroup><col><col></colgroup><thead><tr><th>Shortcut</th><th>Action</th></tr></thead><tbody>
-        <tr data-search="file explorer alt + left go back "><td><kbd class="combo">Alt + Left</kbd></td><td><span class="action">Go back</span></td></tr>
-        <tr data-search="file explorer alt + right go forward "><td><kbd class="combo">Alt + Right</kbd></td><td><span class="action">Go forward</span></td></tr>
-        <tr data-search="file explorer alt + up go up one folder level "><td><kbd class="combo">Alt + Up</kbd></td><td><span class="action">Go up one folder level</span></td></tr>
-        <tr data-search="file explorer ctrl + n open a new file explorer window "><td><kbd class="combo">Ctrl + N</kbd></td><td><span class="action">Open a new File Explorer window</span></td></tr>
-        <tr data-search="file explorer ctrl + w close the active window "><td><kbd class="combo">Ctrl + W</kbd></td><td><span class="action">Close the active window</span></td></tr>
-        <tr data-search="file explorer ctrl + shift + n create a new folder "><td><kbd class="combo">Ctrl + Shift + N</kbd></td><td><span class="action">Create a new folder</span></td></tr>
-        <tr data-search="file explorer f2 rename the selected item "><td><kbd class="combo">F2</kbd></td><td><span class="action">Rename the selected item</span></td></tr>
-        <tr data-search="file explorer f3 search for a file or folder "><td><kbd class="combo">F3</kbd></td><td><span class="action">Search for a file or folder</span></td></tr>
-        <tr data-search="file explorer f4 display the address bar list "><td><kbd class="combo">F4</kbd></td><td><span class="action">Display the address bar list</span></td></tr>
-        <tr data-search="file explorer f5 refresh "><td><kbd class="combo">F5</kbd></td><td><span class="action">Refresh</span></td></tr>
-        <tr data-search="file explorer f6 cycle through screen elements "><td><kbd class="combo">F6</kbd></td><td><span class="action">Cycle through screen elements</span></td></tr>
-        <tr data-search="file explorer f11 maximize or minimize the active window "><td><kbd class="combo">F11</kbd></td><td><span class="action">Maximize or minimize the active window</span></td></tr>
-        <tr data-search="file explorer ctrl + l select the address bar "><td><kbd class="combo">Ctrl + L</kbd></td><td><span class="action">Select the address bar</span></td></tr>
-        <tr data-search="file explorer alt + d select the address bar "><td><kbd class="combo">Alt + D</kbd></td><td><span class="action">Select the address bar</span></td></tr>
-        <tr data-search="file explorer ctrl + e select the search box "><td><kbd class="combo">Ctrl + E</kbd></td><td><span class="action">Select the search box</span></td></tr>
-        <tr data-search="file explorer ctrl + f select the search box "><td><kbd class="combo">Ctrl + F</kbd></td><td><span class="action">Select the search box</span></td></tr>
-        <tr data-search="file explorer alt + enter open properties for the selected item "><td><kbd class="combo">Alt + Enter</kbd></td><td><span class="action">Open Properties for the selected item</span></td></tr>
-        <tr data-search="file explorer alt + p show or hide the preview pane "><td><kbd class="combo">Alt + P</kbd></td><td><span class="action">Show or hide the preview pane</span></td></tr>
-        <tr data-search="file explorer ctrl + a select all items "><td><kbd class="combo">Ctrl + A</kbd></td><td><span class="action">Select all items</span></td></tr>
-        <tr data-search="file explorer ctrl + c copy selected item(s) "><td><kbd class="combo">Ctrl + C</kbd></td><td><span class="action">Copy selected item(s)</span></td></tr>
-        <tr data-search="file explorer ctrl + x cut selected item(s) "><td><kbd class="combo">Ctrl + X</kbd></td><td><span class="action">Cut selected item(s)</span></td></tr>
-        <tr data-search="file explorer ctrl + v paste "><td><kbd class="combo">Ctrl + V</kbd></td><td><span class="action">Paste</span></td></tr>
-        <tr data-search="file explorer ctrl + z undo "><td><kbd class="combo">Ctrl + Z</kbd></td><td><span class="action">Undo</span></td></tr>
-        <tr data-search="file explorer ctrl + y redo "><td><kbd class="combo">Ctrl + Y</kbd></td><td><span class="action">Redo</span></td></tr>
-        <tr data-search="file explorer delete move selected item(s) to the recycle bin "><td><kbd class="combo">Delete</kbd></td><td><span class="action">Move selected item(s) to the Recycle Bin</span></td></tr>
-        <tr data-search="file explorer shift + delete delete selected item(s) without using the recycle bin "><td><kbd class="combo">Shift + Delete</kbd></td><td><span class="action">Delete selected item(s) without using the Recycle Bin</span></td></tr>
-        <tr data-search="file explorer shift + f10 open the context menu for the selected item "><td><kbd class="combo">Shift + F10</kbd></td><td><span class="action">Open the context menu for the selected item</span></td></tr>
-        <tr data-search="file explorer ctrl + mouse wheel change file/folder icon size "><td><kbd class="combo">Ctrl + mouse wheel</kbd></td><td><span class="action">Change file/folder icon size</span></td></tr>
-        <tr data-search="file explorer home move to the top of the active window "><td><kbd class="combo">Home</kbd></td><td><span class="action">Move to the top of the active window</span></td></tr>
-        <tr data-search="file explorer end move to the bottom of the active window "><td><kbd class="combo">End</kbd></td><td><span class="action">Move to the bottom of the active window</span></td></tr>
-        <tr data-search="file explorer right arrow expand the current selection in the navigation pane "><td><kbd class="combo">Right Arrow</kbd></td><td><span class="action">Expand the current selection in the navigation pane</span></td></tr>
-        <tr data-search="file explorer left arrow collapse the current selection / select its parent "><td><kbd class="combo">Left Arrow</kbd></td><td><span class="action">Collapse the current selection / select its parent</span></td></tr>
-        <tr data-search="file explorer backspace go to the previous folder "><td><kbd class="combo">Backspace</kbd></td><td><span class="action">Go to the previous folder</span></td></tr>
-      </tbody></table>
-    </details>
+<div class="shell intro">
+  <p>A no-nonsense cheat sheet for the PowerShell commands people actually reach for day to day: moving around the
+  filesystem, reading and writing files, checking system info, and poking at processes, services, and the network.
+  Search below, or filter by category. Click <span class="mono">Copy</span> next to any example to grab it.</p>
+</div>
 
-    <details class="section" id="youtube" open>
-      <summary><span>YouTube</span><span class="section__count">24 shortcuts</span></summary>
-      <table class="shortcut-table"><colgroup><col><col></colgroup><thead><tr><th>Shortcut</th><th>Action</th></tr></thead><tbody>
-        <tr data-search="youtube k play / pause "><td><kbd class="combo">K</kbd></td><td><span class="action">Play / pause</span></td></tr>
-        <tr data-search="youtube j seek backward 10 seconds "><td><kbd class="combo">J</kbd></td><td><span class="action">Seek backward 10 seconds</span></td></tr>
-        <tr data-search="youtube l seek forward 10 seconds "><td><kbd class="combo">L</kbd></td><td><span class="action">Seek forward 10 seconds</span></td></tr>
-        <tr data-search="youtube left arrow seek backward 5 seconds "><td><kbd class="combo">Left Arrow</kbd></td><td><span class="action">Seek backward 5 seconds</span></td></tr>
-        <tr data-search="youtube right arrow seek forward 5 seconds "><td><kbd class="combo">Right Arrow</kbd></td><td><span class="action">Seek forward 5 seconds</span></td></tr>
-        <tr data-search="youtube up arrow increase volume "><td><kbd class="combo">Up Arrow</kbd></td><td><span class="action">Increase volume</span></td></tr>
-        <tr data-search="youtube down arrow decrease volume "><td><kbd class="combo">Down Arrow</kbd></td><td><span class="action">Decrease volume</span></td></tr>
-        <tr data-search="youtube m mute / unmute "><td><kbd class="combo">M</kbd></td><td><span class="action">Mute / unmute</span></td></tr>
-        <tr data-search="youtube f enter or exit full screen "><td><kbd class="combo">F</kbd></td><td><span class="action">Enter or exit full screen</span></td></tr>
-        <tr data-search="youtube t toggle theater mode "><td><kbd class="combo">T</kbd></td><td><span class="action">Toggle theater mode</span></td></tr>
-        <tr data-search="youtube i open / close miniplayer "><td><kbd class="combo">I</kbd></td><td><span class="action">Open / close Miniplayer</span></td></tr>
-        <tr data-search="youtube c turn captions on / off "><td><kbd class="combo">C</kbd></td><td><span class="action">Turn captions on / off</span></td></tr>
-        <tr data-search="youtube 0 jump to the beginning "><td><kbd class="combo">0</kbd></td><td><span class="action">Jump to the beginning</span></td></tr>
-        <tr data-search="youtube 1…9 jump to 10%…90% of the video "><td><kbd class="combo">1…9</kbd></td><td><span class="action">Jump to 10%…90% of the video</span></td></tr>
-        <tr data-search="youtube &lt; decrease playback speed "><td><kbd class="combo">&lt;</kbd></td><td><span class="action">Decrease playback speed</span></td></tr>
-        <tr data-search="youtube &gt; increase playback speed "><td><kbd class="combo">&gt;</kbd></td><td><span class="action">Increase playback speed</span></td></tr>
-        <tr data-search="youtube , previous frame video paused"><td><kbd class="combo">,</kbd></td><td><span class="action">Previous frame</span><span class="context">Video paused</span></td></tr>
-        <tr data-search="youtube . next frame video paused"><td><kbd class="combo">.</kbd></td><td><span class="action">Next frame</span><span class="context">Video paused</span></td></tr>
-        <tr data-search="youtube shift + n next video "><td><kbd class="combo">Shift + N</kbd></td><td><span class="action">Next video</span></td></tr>
-        <tr data-search="youtube shift + p previous video playlist only"><td><kbd class="combo">Shift + P</kbd></td><td><span class="action">Previous video</span><span class="context">Playlist only</span></td></tr>
-        <tr data-search="youtube ctrl + left previous chapter when chapters are available"><td><kbd class="combo">Ctrl + Left</kbd></td><td><span class="action">Previous chapter</span><span class="context">When chapters are available</span></td></tr>
-        <tr data-search="youtube ctrl + right next chapter when chapters are available"><td><kbd class="combo">Ctrl + Right</kbd></td><td><span class="action">Next chapter</span><span class="context">When chapters are available</span></td></tr>
-        <tr data-search="youtube / focus the search box "><td><kbd class="combo">/</kbd></td><td><span class="action">Focus the search box</span></td></tr>
-        <tr data-search="youtube shift + ? show youtube&#x27;s keyboard-shortcut list "><td><kbd class="combo">Shift + ?</kbd></td><td><span class="action">Show YouTube&#x27;s keyboard-shortcut list</span></td></tr>
-      </tbody></table>
-    </details>
+<div class="shell chips" id="chips"></div>
 
-    <details class="section" id="google-chrome" open>
-      <summary><span>Google Chrome</span><span class="section__count">41 shortcuts</span></summary>
-      <table class="shortcut-table"><colgroup><col><col></colgroup><thead><tr><th>Shortcut</th><th>Action</th></tr></thead><tbody>
-        <tr data-search="google chrome ctrl + n open a new window "><td><kbd class="combo">Ctrl + N</kbd></td><td><span class="action">Open a new window</span></td></tr>
-        <tr data-search="google chrome ctrl + shift + n open a new incognito window "><td><kbd class="combo">Ctrl + Shift + N</kbd></td><td><span class="action">Open a new Incognito window</span></td></tr>
-        <tr data-search="google chrome ctrl + t open a new tab "><td><kbd class="combo">Ctrl + T</kbd></td><td><span class="action">Open a new tab</span></td></tr>
-        <tr data-search="google chrome ctrl + shift + t reopen previously closed tabs "><td><kbd class="combo">Ctrl + Shift + T</kbd></td><td><span class="action">Reopen previously closed tabs</span></td></tr>
-        <tr data-search="google chrome ctrl + w / ctrl + f4 close the current tab "><td><kbd class="combo">Ctrl + W / Ctrl + F4</kbd></td><td><span class="action">Close the current tab</span></td></tr>
-        <tr data-search="google chrome ctrl + shift + w / alt + f4 close the current window "><td><kbd class="combo">Ctrl + Shift + W / Alt + F4</kbd></td><td><span class="action">Close the current window</span></td></tr>
-        <tr data-search="google chrome ctrl + tab / ctrl + pgdn next open tab "><td><kbd class="combo">Ctrl + Tab / Ctrl + PgDn</kbd></td><td><span class="action">Next open tab</span></td></tr>
-        <tr data-search="google chrome ctrl + shift + tab / ctrl + pgup previous open tab "><td><kbd class="combo">Ctrl + Shift + Tab / Ctrl + PgUp</kbd></td><td><span class="action">Previous open tab</span></td></tr>
-        <tr data-search="google chrome ctrl + 1…8 jump to a specific tab "><td><kbd class="combo">Ctrl + 1…8</kbd></td><td><span class="action">Jump to a specific tab</span></td></tr>
-        <tr data-search="google chrome ctrl + 9 jump to the last tab "><td><kbd class="combo">Ctrl + 9</kbd></td><td><span class="action">Jump to the last tab</span></td></tr>
-        <tr data-search="google chrome alt + home open the home page in the current tab "><td><kbd class="combo">Alt + Home</kbd></td><td><span class="action">Open the home page in the current tab</span></td></tr>
-        <tr data-search="google chrome alt + left previous page in history "><td><kbd class="combo">Alt + Left</kbd></td><td><span class="action">Previous page in history</span></td></tr>
-        <tr data-search="google chrome alt + right next page in history "><td><kbd class="combo">Alt + Right</kbd></td><td><span class="action">Next page in history</span></td></tr>
-        <tr data-search="google chrome ctrl + l / alt + d / f6 focus the address bar "><td><kbd class="combo">Ctrl + L / Alt + D / F6</kbd></td><td><span class="action">Focus the address bar</span></td></tr>
-        <tr data-search="google chrome ctrl + d bookmark the current page "><td><kbd class="combo">Ctrl + D</kbd></td><td><span class="action">Bookmark the current page</span></td></tr>
-        <tr data-search="google chrome ctrl + shift + d bookmark all open tabs in a new folder "><td><kbd class="combo">Ctrl + Shift + D</kbd></td><td><span class="action">Bookmark all open tabs in a new folder</span></td></tr>
-        <tr data-search="google chrome ctrl + h open history "><td><kbd class="combo">Ctrl + H</kbd></td><td><span class="action">Open History</span></td></tr>
-        <tr data-search="google chrome ctrl + j open downloads "><td><kbd class="combo">Ctrl + J</kbd></td><td><span class="action">Open Downloads</span></td></tr>
-        <tr data-search="google chrome ctrl + shift + o open bookmark manager "><td><kbd class="combo">Ctrl + Shift + O</kbd></td><td><span class="action">Open Bookmark Manager</span></td></tr>
-        <tr data-search="google chrome ctrl + shift + b show / hide the bookmarks bar "><td><kbd class="combo">Ctrl + Shift + B</kbd></td><td><span class="action">Show / hide the bookmarks bar</span></td></tr>
-        <tr data-search="google chrome shift + esc open chrome task manager "><td><kbd class="combo">Shift + Esc</kbd></td><td><span class="action">Open Chrome Task Manager</span></td></tr>
-        <tr data-search="google chrome ctrl + f find on the current page "><td><kbd class="combo">Ctrl + F</kbd></td><td><span class="action">Find on the current page</span></td></tr>
-        <tr data-search="google chrome ctrl + g / enter next find match "><td><kbd class="combo">Ctrl + G / Enter</kbd></td><td><span class="action">Next find match</span></td></tr>
-        <tr data-search="google chrome ctrl + shift + g / shift + enter previous find match "><td><kbd class="combo">Ctrl + Shift + G / Shift + Enter</kbd></td><td><span class="action">Previous find match</span></td></tr>
-        <tr data-search="google chrome ctrl + p print the current page "><td><kbd class="combo">Ctrl + P</kbd></td><td><span class="action">Print the current page</span></td></tr>
-        <tr data-search="google chrome ctrl + s save the current page "><td><kbd class="combo">Ctrl + S</kbd></td><td><span class="action">Save the current page</span></td></tr>
-        <tr data-search="google chrome ctrl + u view page source "><td><kbd class="combo">Ctrl + U</kbd></td><td><span class="action">View page source</span></td></tr>
-        <tr data-search="google chrome f11 toggle full screen "><td><kbd class="combo">F11</kbd></td><td><span class="action">Toggle full screen</span></td></tr>
-        <tr data-search="google chrome ctrl + + zoom in "><td><kbd class="combo">Ctrl + +</kbd></td><td><span class="action">Zoom in</span></td></tr>
-        <tr data-search="google chrome ctrl + - zoom out "><td><kbd class="combo">Ctrl + -</kbd></td><td><span class="action">Zoom out</span></td></tr>
-        <tr data-search="google chrome ctrl + 0 reset page zoom "><td><kbd class="combo">Ctrl + 0</kbd></td><td><span class="action">Reset page zoom</span></td></tr>
-        <tr data-search="google chrome ctrl + r / f5 reload the current page "><td><kbd class="combo">Ctrl + R / F5</kbd></td><td><span class="action">Reload the current page</span></td></tr>
-        <tr data-search="google chrome ctrl + shift + r / shift + f5 reload while ignoring cached content "><td><kbd class="combo">Ctrl + Shift + R / Shift + F5</kbd></td><td><span class="action">Reload while ignoring cached content</span></td></tr>
-        <tr data-search="google chrome ctrl + shift + delete open clear browsing data "><td><kbd class="combo">Ctrl + Shift + Delete</kbd></td><td><span class="action">Open Clear browsing data</span></td></tr>
-        <tr data-search="google chrome f12 / ctrl + shift + i open developer tools "><td><kbd class="combo">F12 / Ctrl + Shift + I</kbd></td><td><span class="action">Open Developer Tools</span></td></tr>
-        <tr data-search="google chrome ctrl + shift + j open developer tools console "><td><kbd class="combo">Ctrl + Shift + J</kbd></td><td><span class="action">Open Developer Tools Console</span></td></tr>
-        <tr data-search="google chrome ctrl + shift + c open inspect element mode "><td><kbd class="combo">Ctrl + Shift + C</kbd></td><td><span class="action">Open Inspect Element mode</span></td></tr>
-        <tr data-search="google chrome space / pgdn scroll down one screen "><td><kbd class="combo">Space / PgDn</kbd></td><td><span class="action">Scroll down one screen</span></td></tr>
-        <tr data-search="google chrome shift + space / pgup scroll up one screen "><td><kbd class="combo">Shift + Space / PgUp</kbd></td><td><span class="action">Scroll up one screen</span></td></tr>
-        <tr data-search="google chrome home go to the top of the page "><td><kbd class="combo">Home</kbd></td><td><span class="action">Go to the top of the page</span></td></tr>
-        <tr data-search="google chrome end go to the bottom of the page "><td><kbd class="combo">End</kbd></td><td><span class="action">Go to the bottom of the page</span></td></tr>
-      </tbody></table>
-    </details>
+<main class="shell" id="main"></main>
 
-    <details class="section" id="mozilla-firefox" open>
-      <summary><span>Mozilla Firefox</span><span class="section__count">39 shortcuts</span></summary>
-      <p class="section__note">Firefox 147+ can customize dozens of built-in shortcuts at about:keyboard, so your local bindings may differ.</p>
-      <table class="shortcut-table"><colgroup><col><col></colgroup><thead><tr><th>Shortcut</th><th>Action</th></tr></thead><tbody>
-        <tr data-search="mozilla firefox ctrl + n open a new window "><td><kbd class="combo">Ctrl + N</kbd></td><td><span class="action">Open a new window</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + shift + p open a new private window "><td><kbd class="combo">Ctrl + Shift + P</kbd></td><td><span class="action">Open a new private window</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + t open a new tab "><td><kbd class="combo">Ctrl + T</kbd></td><td><span class="action">Open a new tab</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + shift + t reopen the last closed tab "><td><kbd class="combo">Ctrl + Shift + T</kbd></td><td><span class="action">Reopen the last closed tab</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + w / ctrl + f4 close the current tab "><td><kbd class="combo">Ctrl + W / Ctrl + F4</kbd></td><td><span class="action">Close the current tab</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + shift + w / alt + f4 close the current window "><td><kbd class="combo">Ctrl + Shift + W / Alt + F4</kbd></td><td><span class="action">Close the current window</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + tab / ctrl + pgdn next tab "><td><kbd class="combo">Ctrl + Tab / Ctrl + PgDn</kbd></td><td><span class="action">Next tab</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + shift + tab / ctrl + pgup previous tab "><td><kbd class="combo">Ctrl + Shift + Tab / Ctrl + PgUp</kbd></td><td><span class="action">Previous tab</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + 1…8 jump to a specific tab "><td><kbd class="combo">Ctrl + 1…8</kbd></td><td><span class="action">Jump to a specific tab</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + 9 jump to the last tab "><td><kbd class="combo">Ctrl + 9</kbd></td><td><span class="action">Jump to the last tab</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + l / f6 focus the address bar "><td><kbd class="combo">Ctrl + L / F6</kbd></td><td><span class="action">Focus the address bar</span></td></tr>
-        <tr data-search="mozilla firefox alt + left go back "><td><kbd class="combo">Alt + Left</kbd></td><td><span class="action">Go back</span></td></tr>
-        <tr data-search="mozilla firefox alt + right go forward "><td><kbd class="combo">Alt + Right</kbd></td><td><span class="action">Go forward</span></td></tr>
-        <tr data-search="mozilla firefox alt + home open the home page "><td><kbd class="combo">Alt + Home</kbd></td><td><span class="action">Open the home page</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + r / f5 reload "><td><kbd class="combo">Ctrl + R / F5</kbd></td><td><span class="action">Reload</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + shift + r / ctrl + f5 reload while ignoring cached content "><td><kbd class="combo">Ctrl + Shift + R / Ctrl + F5</kbd></td><td><span class="action">Reload while ignoring cached content</span></td></tr>
-        <tr data-search="mozilla firefox esc stop loading "><td><kbd class="combo">Esc</kbd></td><td><span class="action">Stop loading</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + f find on page "><td><kbd class="combo">Ctrl + F</kbd></td><td><span class="action">Find on page</span></td></tr>
-        <tr data-search="mozilla firefox f3 / ctrl + g find next "><td><kbd class="combo">F3 / Ctrl + G</kbd></td><td><span class="action">Find next</span></td></tr>
-        <tr data-search="mozilla firefox shift + f3 / ctrl + shift + g find previous "><td><kbd class="combo">Shift + F3 / Ctrl + Shift + G</kbd></td><td><span class="action">Find previous</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + d bookmark the current page "><td><kbd class="combo">Ctrl + D</kbd></td><td><span class="action">Bookmark the current page</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + shift + o open the library / bookmarks "><td><kbd class="combo">Ctrl + Shift + O</kbd></td><td><span class="action">Open the Library / bookmarks</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + b toggle the bookmarks sidebar "><td><kbd class="combo">Ctrl + B</kbd></td><td><span class="action">Toggle the bookmarks sidebar</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + h toggle the history sidebar "><td><kbd class="combo">Ctrl + H</kbd></td><td><span class="action">Toggle the history sidebar</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + j open downloads "><td><kbd class="combo">Ctrl + J</kbd></td><td><span class="action">Open Downloads</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + shift + delete open clear recent history "><td><kbd class="combo">Ctrl + Shift + Delete</kbd></td><td><span class="action">Open Clear Recent History</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + u view page source "><td><kbd class="combo">Ctrl + U</kbd></td><td><span class="action">View page source</span></td></tr>
-        <tr data-search="mozilla firefox f11 toggle full screen "><td><kbd class="combo">F11</kbd></td><td><span class="action">Toggle full screen</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + + zoom in "><td><kbd class="combo">Ctrl + +</kbd></td><td><span class="action">Zoom in</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + - zoom out "><td><kbd class="combo">Ctrl + -</kbd></td><td><span class="action">Zoom out</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + 0 reset zoom "><td><kbd class="combo">Ctrl + 0</kbd></td><td><span class="action">Reset zoom</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + shift + a open add-ons manager "><td><kbd class="combo">Ctrl + Shift + A</kbd></td><td><span class="action">Open Add-ons Manager</span></td></tr>
-        <tr data-search="mozilla firefox f12 / ctrl + shift + i open developer tools "><td><kbd class="combo">F12 / Ctrl + Shift + I</kbd></td><td><span class="action">Open Developer Tools</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + shift + k open web console "><td><kbd class="combo">Ctrl + Shift + K</kbd></td><td><span class="action">Open Web Console</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + shift + c open inspector "><td><kbd class="combo">Ctrl + Shift + C</kbd></td><td><span class="action">Open Inspector</span></td></tr>
-        <tr data-search="mozilla firefox space play / pause media media element focused"><td><kbd class="combo">Space</kbd></td><td><span class="action">Play / pause media</span><span class="context">Media element focused</span></td></tr>
-        <tr data-search="mozilla firefox left / right seek media backward / forward 15 seconds media element focused"><td><kbd class="combo">Left / Right</kbd></td><td><span class="action">Seek media backward / forward 15 seconds</span><span class="context">Media element focused</span></td></tr>
-        <tr data-search="mozilla firefox ctrl + left / right seek media backward / forward 10% media element focused"><td><kbd class="combo">Ctrl + Left / Right</kbd></td><td><span class="action">Seek media backward / forward 10%</span><span class="context">Media element focused</span></td></tr>
-        <tr data-search="mozilla firefox home / end seek media to beginning / end media element focused"><td><kbd class="combo">Home / End</kbd></td><td><span class="action">Seek media to beginning / end</span><span class="context">Media element focused</span></td></tr>
-      </tbody></table>
-    </details>
+<div id="empty-state" class="shell" hidden>No commands match your search.</div>
 
-    <details class="section" id="visual-studio-code" open>
-      <summary><span>Visual Studio Code</span><span class="section__count">57 shortcuts</span></summary>
-      <table class="shortcut-table"><colgroup><col><col></colgroup><thead><tr><th>Shortcut</th><th>Action</th></tr></thead><tbody>
-        <tr data-search="visual studio code ctrl + shift + p / f1 show command palette "><td><kbd class="combo">Ctrl + Shift + P / F1</kbd></td><td><span class="action">Show Command Palette</span></td></tr>
-        <tr data-search="visual studio code ctrl + p quick open / go to file "><td><kbd class="combo">Ctrl + P</kbd></td><td><span class="action">Quick Open / go to file</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + n new window / instance "><td><kbd class="combo">Ctrl + Shift + N</kbd></td><td><span class="action">New window / instance</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + w close window / instance "><td><kbd class="combo">Ctrl + Shift + W</kbd></td><td><span class="action">Close window / instance</span></td></tr>
-        <tr data-search="visual studio code ctrl + , open settings "><td><kbd class="combo">Ctrl + ,</kbd></td><td><span class="action">Open Settings</span></td></tr>
-        <tr data-search="visual studio code ctrl + k, ctrl + s open keyboard shortcuts "><td><kbd class="combo">Ctrl + K, Ctrl + S</kbd></td><td><span class="action">Open Keyboard Shortcuts</span></td></tr>
-        <tr data-search="visual studio code ctrl + x cut line with no selection"><td><kbd class="combo">Ctrl + X</kbd></td><td><span class="action">Cut line</span><span class="context">With no selection</span></td></tr>
-        <tr data-search="visual studio code ctrl + c copy line with no selection"><td><kbd class="combo">Ctrl + C</kbd></td><td><span class="action">Copy line</span><span class="context">With no selection</span></td></tr>
-        <tr data-search="visual studio code alt + up / down move line up / down "><td><kbd class="combo">Alt + Up / Down</kbd></td><td><span class="action">Move line up / down</span></td></tr>
-        <tr data-search="visual studio code shift + alt + up / down copy line up / down "><td><kbd class="combo">Shift + Alt + Up / Down</kbd></td><td><span class="action">Copy line up / down</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + k delete line "><td><kbd class="combo">Ctrl + Shift + K</kbd></td><td><span class="action">Delete line</span></td></tr>
-        <tr data-search="visual studio code ctrl + enter insert line below "><td><kbd class="combo">Ctrl + Enter</kbd></td><td><span class="action">Insert line below</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + enter insert line above "><td><kbd class="combo">Ctrl + Shift + Enter</kbd></td><td><span class="action">Insert line above</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + \ jump to matching bracket "><td><kbd class="combo">Ctrl + Shift + \</kbd></td><td><span class="action">Jump to matching bracket</span></td></tr>
-        <tr data-search="visual studio code ctrl + ] / [ indent / outdent line "><td><kbd class="combo">Ctrl + ] / [</kbd></td><td><span class="action">Indent / outdent line</span></td></tr>
-        <tr data-search="visual studio code home / end go to beginning / end of line "><td><kbd class="combo">Home / End</kbd></td><td><span class="action">Go to beginning / end of line</span></td></tr>
-        <tr data-search="visual studio code ctrl + home / end go to beginning / end of file "><td><kbd class="combo">Ctrl + Home / End</kbd></td><td><span class="action">Go to beginning / end of file</span></td></tr>
-        <tr data-search="visual studio code ctrl + up / down scroll line up / down "><td><kbd class="combo">Ctrl + Up / Down</kbd></td><td><span class="action">Scroll line up / down</span></td></tr>
-        <tr data-search="visual studio code alt + pgup / pgdn scroll page up / down "><td><kbd class="combo">Alt + PgUp / PgDn</kbd></td><td><span class="action">Scroll page up / down</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + [ fold region "><td><kbd class="combo">Ctrl + Shift + [</kbd></td><td><span class="action">Fold region</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + ] unfold region "><td><kbd class="combo">Ctrl + Shift + ]</kbd></td><td><span class="action">Unfold region</span></td></tr>
-        <tr data-search="visual studio code ctrl + k, ctrl + 0 fold all regions "><td><kbd class="combo">Ctrl + K, Ctrl + 0</kbd></td><td><span class="action">Fold all regions</span></td></tr>
-        <tr data-search="visual studio code ctrl + k, ctrl + j unfold all regions "><td><kbd class="combo">Ctrl + K, Ctrl + J</kbd></td><td><span class="action">Unfold all regions</span></td></tr>
-        <tr data-search="visual studio code ctrl + / toggle line comment "><td><kbd class="combo">Ctrl + /</kbd></td><td><span class="action">Toggle line comment</span></td></tr>
-        <tr data-search="visual studio code shift + alt + a toggle block comment "><td><kbd class="combo">Shift + Alt + A</kbd></td><td><span class="action">Toggle block comment</span></td></tr>
-        <tr data-search="visual studio code alt + z toggle word wrap "><td><kbd class="combo">Alt + Z</kbd></td><td><span class="action">Toggle word wrap</span></td></tr>
-        <tr data-search="visual studio code ctrl + f find "><td><kbd class="combo">Ctrl + F</kbd></td><td><span class="action">Find</span></td></tr>
-        <tr data-search="visual studio code ctrl + h replace "><td><kbd class="combo">Ctrl + H</kbd></td><td><span class="action">Replace</span></td></tr>
-        <tr data-search="visual studio code f3 / shift + f3 find next / previous "><td><kbd class="combo">F3 / Shift + F3</kbd></td><td><span class="action">Find next / previous</span></td></tr>
-        <tr data-search="visual studio code alt + enter select all occurrences of find match "><td><kbd class="combo">Alt + Enter</kbd></td><td><span class="action">Select all occurrences of find match</span></td></tr>
-        <tr data-search="visual studio code ctrl + d add next find match to selection "><td><kbd class="combo">Ctrl + D</kbd></td><td><span class="action">Add next find match to selection</span></td></tr>
-        <tr data-search="visual studio code ctrl + g go to line "><td><kbd class="combo">Ctrl + G</kbd></td><td><span class="action">Go to line</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + o go to symbol in file "><td><kbd class="combo">Ctrl + Shift + O</kbd></td><td><span class="action">Go to symbol in file</span></td></tr>
-        <tr data-search="visual studio code ctrl + t show all symbols "><td><kbd class="combo">Ctrl + T</kbd></td><td><span class="action">Show all symbols</span></td></tr>
-        <tr data-search="visual studio code f8 / shift + f8 next / previous error or warning "><td><kbd class="combo">F8 / Shift + F8</kbd></td><td><span class="action">Next / previous error or warning</span></td></tr>
-        <tr data-search="visual studio code alt + left / right navigate back / forward "><td><kbd class="combo">Alt + Left / Right</kbd></td><td><span class="action">Navigate back / forward</span></td></tr>
-        <tr data-search="visual studio code ctrl + space trigger suggestion "><td><kbd class="combo">Ctrl + Space</kbd></td><td><span class="action">Trigger suggestion</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + space trigger parameter hints "><td><kbd class="combo">Ctrl + Shift + Space</kbd></td><td><span class="action">Trigger parameter hints</span></td></tr>
-        <tr data-search="visual studio code shift + alt + f format document "><td><kbd class="combo">Shift + Alt + F</kbd></td><td><span class="action">Format document</span></td></tr>
-        <tr data-search="visual studio code ctrl + k, ctrl + f format selection "><td><kbd class="combo">Ctrl + K, Ctrl + F</kbd></td><td><span class="action">Format selection</span></td></tr>
-        <tr data-search="visual studio code f12 go to definition "><td><kbd class="combo">F12</kbd></td><td><span class="action">Go to definition</span></td></tr>
-        <tr data-search="visual studio code alt + f12 peek definition "><td><kbd class="combo">Alt + F12</kbd></td><td><span class="action">Peek definition</span></td></tr>
-        <tr data-search="visual studio code shift + f12 show references "><td><kbd class="combo">Shift + F12</kbd></td><td><span class="action">Show references</span></td></tr>
-        <tr data-search="visual studio code f2 rename symbol "><td><kbd class="combo">F2</kbd></td><td><span class="action">Rename symbol</span></td></tr>
-        <tr data-search="visual studio code ctrl + . quick fix "><td><kbd class="combo">Ctrl + .</kbd></td><td><span class="action">Quick Fix</span></td></tr>
-        <tr data-search="visual studio code ctrl + b toggle primary side bar "><td><kbd class="combo">Ctrl + B</kbd></td><td><span class="action">Toggle primary side bar</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + e show explorer / focus explorer "><td><kbd class="combo">Ctrl + Shift + E</kbd></td><td><span class="action">Show Explorer / focus Explorer</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + f show search "><td><kbd class="combo">Ctrl + Shift + F</kbd></td><td><span class="action">Show Search</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + g show source control "><td><kbd class="combo">Ctrl + Shift + G</kbd></td><td><span class="action">Show Source Control</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + d show run and debug "><td><kbd class="combo">Ctrl + Shift + D</kbd></td><td><span class="action">Show Run and Debug</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + x show extensions "><td><kbd class="combo">Ctrl + Shift + X</kbd></td><td><span class="action">Show Extensions</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + m show problems panel "><td><kbd class="combo">Ctrl + Shift + M</kbd></td><td><span class="action">Show Problems panel</span></td></tr>
-        <tr data-search="visual studio code ctrl + j toggle panel "><td><kbd class="combo">Ctrl + J</kbd></td><td><span class="action">Toggle panel</span></td></tr>
-        <tr data-search="visual studio code ctrl + ` toggle integrated terminal "><td><kbd class="combo">Ctrl + `</kbd></td><td><span class="action">Toggle integrated terminal</span></td></tr>
-        <tr data-search="visual studio code ctrl + shift + ` create new integrated terminal "><td><kbd class="combo">Ctrl + Shift + `</kbd></td><td><span class="action">Create new integrated terminal</span></td></tr>
-        <tr data-search="visual studio code ctrl + 1 / 2 / 3 focus editor group 1 / 2 / 3 "><td><kbd class="combo">Ctrl + 1 / 2 / 3</kbd></td><td><span class="action">Focus editor group 1 / 2 / 3</span></td></tr>
-        <tr data-search="visual studio code ctrl + w close active editor "><td><kbd class="combo">Ctrl + W</kbd></td><td><span class="action">Close active editor</span></td></tr>
-      </tbody></table>
-    </details>
+<footer class="shell">
+  <p>Reference only — always sanity-check destructive commands (<span class="mono">Remove-Item</span>,
+  <span class="mono">Stop-Process</span>, registry edits) before running them against anything you care about.</p>
+</footer>
 
-    <details class="section" id="notepad" open>
-      <summary><span>Notepad++</span><span class="section__count">35 shortcuts</span></summary>
-      <p class="section__note">Notepad++ shortcuts are configurable in Settings &gt; Shortcut Mapper; this section lists common defaults.</p>
-      <table class="shortcut-table"><colgroup><col><col></colgroup><thead><tr><th>Shortcut</th><th>Action</th></tr></thead><tbody>
-        <tr data-search="notepad++ ctrl + n new file "><td><kbd class="combo">Ctrl + N</kbd></td><td><span class="action">New file</span></td></tr>
-        <tr data-search="notepad++ ctrl + o open file "><td><kbd class="combo">Ctrl + O</kbd></td><td><span class="action">Open file</span></td></tr>
-        <tr data-search="notepad++ ctrl + s save "><td><kbd class="combo">Ctrl + S</kbd></td><td><span class="action">Save</span></td></tr>
-        <tr data-search="notepad++ ctrl + alt + s save as "><td><kbd class="combo">Ctrl + Alt + S</kbd></td><td><span class="action">Save As</span></td></tr>
-        <tr data-search="notepad++ ctrl + shift + s save all "><td><kbd class="combo">Ctrl + Shift + S</kbd></td><td><span class="action">Save all</span></td></tr>
-        <tr data-search="notepad++ ctrl + r reload from disk "><td><kbd class="combo">Ctrl + R</kbd></td><td><span class="action">Reload from disk</span></td></tr>
-        <tr data-search="notepad++ ctrl + w close current file "><td><kbd class="combo">Ctrl + W</kbd></td><td><span class="action">Close current file</span></td></tr>
-        <tr data-search="notepad++ ctrl + shift + w close all files "><td><kbd class="combo">Ctrl + Shift + W</kbd></td><td><span class="action">Close all files</span></td></tr>
-        <tr data-search="notepad++ ctrl + shift + t restore recently closed file "><td><kbd class="combo">Ctrl + Shift + T</kbd></td><td><span class="action">Restore recently closed file</span></td></tr>
-        <tr data-search="notepad++ ctrl + p print "><td><kbd class="combo">Ctrl + P</kbd></td><td><span class="action">Print</span></td></tr>
-        <tr data-search="notepad++ ctrl + f find "><td><kbd class="combo">Ctrl + F</kbd></td><td><span class="action">Find</span></td></tr>
-        <tr data-search="notepad++ f3 find next "><td><kbd class="combo">F3</kbd></td><td><span class="action">Find next</span></td></tr>
-        <tr data-search="notepad++ shift + f3 find previous "><td><kbd class="combo">Shift + F3</kbd></td><td><span class="action">Find previous</span></td></tr>
-        <tr data-search="notepad++ ctrl + h replace "><td><kbd class="combo">Ctrl + H</kbd></td><td><span class="action">Replace</span></td></tr>
-        <tr data-search="notepad++ ctrl + shift + f find in files "><td><kbd class="combo">Ctrl + Shift + F</kbd></td><td><span class="action">Find in Files</span></td></tr>
-        <tr data-search="notepad++ ctrl + g go to line "><td><kbd class="combo">Ctrl + G</kbd></td><td><span class="action">Go to line</span></td></tr>
-        <tr data-search="notepad++ ctrl + l delete current line "><td><kbd class="combo">Ctrl + L</kbd></td><td><span class="action">Delete current line</span></td></tr>
-        <tr data-search="notepad++ ctrl + d duplicate current line "><td><kbd class="combo">Ctrl + D</kbd></td><td><span class="action">Duplicate current line</span></td></tr>
-        <tr data-search="notepad++ ctrl + t swap current line with previous line "><td><kbd class="combo">Ctrl + T</kbd></td><td><span class="action">Swap current line with previous line</span></td></tr>
-        <tr data-search="notepad++ ctrl + shift + up move current line up "><td><kbd class="combo">Ctrl + Shift + Up</kbd></td><td><span class="action">Move current line up</span></td></tr>
-        <tr data-search="notepad++ ctrl + shift + down move current line down "><td><kbd class="combo">Ctrl + Shift + Down</kbd></td><td><span class="action">Move current line down</span></td></tr>
-        <tr data-search="notepad++ ctrl + z undo "><td><kbd class="combo">Ctrl + Z</kbd></td><td><span class="action">Undo</span></td></tr>
-        <tr data-search="notepad++ ctrl + y redo "><td><kbd class="combo">Ctrl + Y</kbd></td><td><span class="action">Redo</span></td></tr>
-        <tr data-search="notepad++ ctrl + x cut "><td><kbd class="combo">Ctrl + X</kbd></td><td><span class="action">Cut</span></td></tr>
-        <tr data-search="notepad++ ctrl + c copy "><td><kbd class="combo">Ctrl + C</kbd></td><td><span class="action">Copy</span></td></tr>
-        <tr data-search="notepad++ ctrl + v paste "><td><kbd class="combo">Ctrl + V</kbd></td><td><span class="action">Paste</span></td></tr>
-        <tr data-search="notepad++ ctrl + a select all "><td><kbd class="combo">Ctrl + A</kbd></td><td><span class="action">Select all</span></td></tr>
-        <tr data-search="notepad++ ctrl + mouse wheel zoom in / out "><td><kbd class="combo">Ctrl + mouse wheel</kbd></td><td><span class="action">Zoom in / out</span></td></tr>
-        <tr data-search="notepad++ ctrl + num + zoom in "><td><kbd class="combo">Ctrl + Num +</kbd></td><td><span class="action">Zoom in</span></td></tr>
-        <tr data-search="notepad++ ctrl + num - zoom out "><td><kbd class="combo">Ctrl + Num -</kbd></td><td><span class="action">Zoom out</span></td></tr>
-        <tr data-search="notepad++ ctrl + shift + space show function parameter hint "><td><kbd class="combo">Ctrl + Shift + Space</kbd></td><td><span class="action">Show function parameter hint</span></td></tr>
-        <tr data-search="notepad++ ctrl + tab next document "><td><kbd class="combo">Ctrl + Tab</kbd></td><td><span class="action">Next document</span></td></tr>
-        <tr data-search="notepad++ ctrl + shift + tab previous document "><td><kbd class="combo">Ctrl + Shift + Tab</kbd></td><td><span class="action">Previous document</span></td></tr>
-        <tr data-search="notepad++ ctrl + pgup / pgdn previous / next document "><td><kbd class="combo">Ctrl + PgUp / PgDn</kbd></td><td><span class="action">Previous / next document</span></td></tr>
-        <tr data-search="notepad++ ctrl + shift + pgup / pgdn move current tab left / right "><td><kbd class="combo">Ctrl + Shift + PgUp / PgDn</kbd></td><td><span class="action">Move current tab left / right</span></td></tr>
-      </tbody></table>
-    </details>
+<script>
+(() => {
+  const data = [
+    // Navigation & Files
+    { cat: "Navigation & Files", cmd: "Get-Location", alias: "pwd, gl", example: "Get-Location", desc: "Show the current working directory." },
+    { cat: "Navigation & Files", cmd: "Set-Location", alias: "cd, sl, chdir", example: 'Set-Location C:\\Users\\Ian\\Documents', desc: "Change the current directory." },
+    { cat: "Navigation & Files", cmd: "Set-Location ..", alias: "cd ..", example: "Set-Location ..", desc: "Move up one directory level." },
+    { cat: "Navigation & Files", cmd: "Get-ChildItem", alias: "ls, dir, gci", example: "Get-ChildItem", desc: "List files and folders in the current directory." },
+    { cat: "Navigation & Files", cmd: "Get-ChildItem -Force", alias: "ls -Force", example: "Get-ChildItem -Force", desc: "List files and folders, including hidden and system items." },
+    { cat: "Navigation & Files", cmd: "Get-ChildItem -Recurse", alias: "ls -r", example: 'Get-ChildItem -Recurse -Filter "*.log"', desc: "List files recursively, optionally filtered by name or extension." },
+    { cat: "Navigation & Files", cmd: "tree", alias: "", example: "tree /F", desc: "Print a visual folder tree; add /F to include file names. (Native cmd.exe command, no PowerShell alias.)" },
+    { cat: "Navigation & Files", cmd: "New-Item (folder)", alias: "mkdir, md", example: 'New-Item -ItemType Directory -Path "NewFolder"', desc: "Create a new directory." },
+    { cat: "Navigation & Files", cmd: "New-Item (file)", alias: "ni", example: 'New-Item -ItemType File -Path "notes.txt"', desc: "Create a new empty file." },
+    { cat: "Navigation & Files", cmd: "Copy-Item", alias: "cp, copy, cpi", example: 'Copy-Item .\\report.docx D:\\Backup\\ -Recurse', desc: "Copy a file or folder (use -Recurse for folders)." },
+    { cat: "Navigation & Files", cmd: "Move-Item", alias: "mv, move, mi", example: 'Move-Item .\\draft.txt .\\Archive\\', desc: "Move (or rename, if the destination is a new name) a file or folder." },
+    { cat: "Navigation & Files", cmd: "Rename-Item", alias: "ren, rni", example: 'Rename-Item .\\old.txt new.txt', desc: "Rename a file or folder in place." },
+    { cat: "Navigation & Files", cmd: "Remove-Item", alias: "rm, del, erase, rd", example: 'Remove-Item .\\temp\\ -Recurse -Force', desc: "Delete a file or folder. -Recurse for folders, -Force for hidden/read-only items." },
+    { cat: "Navigation & Files", cmd: "Test-Path", alias: "", example: 'Test-Path C:\\Data\\report.csv', desc: "Check whether a file or folder exists; returns True or False." },
+    { cat: "Navigation & Files", cmd: "Invoke-Item", alias: "ii", example: 'Invoke-Item .\\report.pdf', desc: "Open a file with its default associated application." },
+    { cat: "Navigation & Files", cmd: "Start-Process", alias: "start, saps", example: 'Start-Process notepad "C:\\notes.txt"', desc: "Launch an application, optionally with a file or arguments." },
+    { cat: "Navigation & Files", cmd: "code / notepad", alias: "", example: 'code .\\index.html', desc: "Open a file (or the current folder, for VS Code) in an editor." },
 
-    <details class="section" id="microsoft-word" open>
-      <summary><span>Microsoft Word</span><span class="section__count">61 shortcuts</span></summary>
-      <table class="shortcut-table"><colgroup><col><col></colgroup><thead><tr><th>Shortcut</th><th>Action</th></tr></thead><tbody>
-        <tr data-search="microsoft word ctrl + n create a new document "><td><kbd class="combo">Ctrl + N</kbd></td><td><span class="action">Create a new document</span></td></tr>
-        <tr data-search="microsoft word ctrl + o open a document "><td><kbd class="combo">Ctrl + O</kbd></td><td><span class="action">Open a document</span></td></tr>
-        <tr data-search="microsoft word ctrl + s save "><td><kbd class="combo">Ctrl + S</kbd></td><td><span class="action">Save</span></td></tr>
-        <tr data-search="microsoft word f12 save as "><td><kbd class="combo">F12</kbd></td><td><span class="action">Save As</span></td></tr>
-        <tr data-search="microsoft word ctrl + p print "><td><kbd class="combo">Ctrl + P</kbd></td><td><span class="action">Print</span></td></tr>
-        <tr data-search="microsoft word ctrl + w close the document "><td><kbd class="combo">Ctrl + W</kbd></td><td><span class="action">Close the document</span></td></tr>
-        <tr data-search="microsoft word ctrl + z undo "><td><kbd class="combo">Ctrl + Z</kbd></td><td><span class="action">Undo</span></td></tr>
-        <tr data-search="microsoft word ctrl + y redo / repeat "><td><kbd class="combo">Ctrl + Y</kbd></td><td><span class="action">Redo / repeat</span></td></tr>
-        <tr data-search="microsoft word ctrl + x cut "><td><kbd class="combo">Ctrl + X</kbd></td><td><span class="action">Cut</span></td></tr>
-        <tr data-search="microsoft word ctrl + c copy "><td><kbd class="combo">Ctrl + C</kbd></td><td><span class="action">Copy</span></td></tr>
-        <tr data-search="microsoft word ctrl + v paste "><td><kbd class="combo">Ctrl + V</kbd></td><td><span class="action">Paste</span></td></tr>
-        <tr data-search="microsoft word ctrl + a select all "><td><kbd class="combo">Ctrl + A</kbd></td><td><span class="action">Select all</span></td></tr>
-        <tr data-search="microsoft word ctrl + f find "><td><kbd class="combo">Ctrl + F</kbd></td><td><span class="action">Find</span></td></tr>
-        <tr data-search="microsoft word ctrl + h replace "><td><kbd class="combo">Ctrl + H</kbd></td><td><span class="action">Replace</span></td></tr>
-        <tr data-search="microsoft word ctrl + g / f5 go to "><td><kbd class="combo">Ctrl + G / F5</kbd></td><td><span class="action">Go To</span></td></tr>
-        <tr data-search="microsoft word ctrl + b bold "><td><kbd class="combo">Ctrl + B</kbd></td><td><span class="action">Bold</span></td></tr>
-        <tr data-search="microsoft word ctrl + i italic "><td><kbd class="combo">Ctrl + I</kbd></td><td><span class="action">Italic</span></td></tr>
-        <tr data-search="microsoft word ctrl + u underline "><td><kbd class="combo">Ctrl + U</kbd></td><td><span class="action">Underline</span></td></tr>
-        <tr data-search="microsoft word ctrl + shift + w underline words but not spaces "><td><kbd class="combo">Ctrl + Shift + W</kbd></td><td><span class="action">Underline words but not spaces</span></td></tr>
-        <tr data-search="microsoft word ctrl + shift + d double underline "><td><kbd class="combo">Ctrl + Shift + D</kbd></td><td><span class="action">Double underline</span></td></tr>
-        <tr data-search="microsoft word ctrl + = subscript "><td><kbd class="combo">Ctrl + =</kbd></td><td><span class="action">Subscript</span></td></tr>
-        <tr data-search="microsoft word ctrl + shift + = superscript "><td><kbd class="combo">Ctrl + Shift + =</kbd></td><td><span class="action">Superscript</span></td></tr>
-        <tr data-search="microsoft word shift + f3 change case "><td><kbd class="combo">Shift + F3</kbd></td><td><span class="action">Change case</span></td></tr>
-        <tr data-search="microsoft word ctrl + shift + &gt; increase font size "><td><kbd class="combo">Ctrl + Shift + &gt;</kbd></td><td><span class="action">Increase font size</span></td></tr>
-        <tr data-search="microsoft word ctrl + shift + &lt; decrease font size "><td><kbd class="combo">Ctrl + Shift + &lt;</kbd></td><td><span class="action">Decrease font size</span></td></tr>
-        <tr data-search="microsoft word ctrl + ] increase font size by 1 point "><td><kbd class="combo">Ctrl + ]</kbd></td><td><span class="action">Increase font size by 1 point</span></td></tr>
-        <tr data-search="microsoft word ctrl + [ decrease font size by 1 point "><td><kbd class="combo">Ctrl + [</kbd></td><td><span class="action">Decrease font size by 1 point</span></td></tr>
-        <tr data-search="microsoft word ctrl + space remove character formatting "><td><kbd class="combo">Ctrl + Space</kbd></td><td><span class="action">Remove character formatting</span></td></tr>
-        <tr data-search="microsoft word ctrl + q remove paragraph formatting "><td><kbd class="combo">Ctrl + Q</kbd></td><td><span class="action">Remove paragraph formatting</span></td></tr>
-        <tr data-search="microsoft word ctrl + l align paragraph left "><td><kbd class="combo">Ctrl + L</kbd></td><td><span class="action">Align paragraph left</span></td></tr>
-        <tr data-search="microsoft word ctrl + e center paragraph "><td><kbd class="combo">Ctrl + E</kbd></td><td><span class="action">Center paragraph</span></td></tr>
-        <tr data-search="microsoft word ctrl + r align paragraph right "><td><kbd class="combo">Ctrl + R</kbd></td><td><span class="action">Align paragraph right</span></td></tr>
-        <tr data-search="microsoft word ctrl + j justify paragraph "><td><kbd class="combo">Ctrl + J</kbd></td><td><span class="action">Justify paragraph</span></td></tr>
-        <tr data-search="microsoft word ctrl + 1 single-line spacing "><td><kbd class="combo">Ctrl + 1</kbd></td><td><span class="action">Single-line spacing</span></td></tr>
-        <tr data-search="microsoft word ctrl + 2 double-line spacing "><td><kbd class="combo">Ctrl + 2</kbd></td><td><span class="action">Double-line spacing</span></td></tr>
-        <tr data-search="microsoft word ctrl + 5 1.5-line spacing "><td><kbd class="combo">Ctrl + 5</kbd></td><td><span class="action">1.5-line spacing</span></td></tr>
-        <tr data-search="microsoft word ctrl + m indent paragraph "><td><kbd class="combo">Ctrl + M</kbd></td><td><span class="action">Indent paragraph</span></td></tr>
-        <tr data-search="microsoft word ctrl + shift + m remove paragraph indent "><td><kbd class="combo">Ctrl + Shift + M</kbd></td><td><span class="action">Remove paragraph indent</span></td></tr>
-        <tr data-search="microsoft word ctrl + t create hanging indent "><td><kbd class="combo">Ctrl + T</kbd></td><td><span class="action">Create hanging indent</span></td></tr>
-        <tr data-search="microsoft word ctrl + shift + t remove hanging indent "><td><kbd class="combo">Ctrl + Shift + T</kbd></td><td><span class="action">Remove hanging indent</span></td></tr>
-        <tr data-search="microsoft word ctrl + enter insert page break "><td><kbd class="combo">Ctrl + Enter</kbd></td><td><span class="action">Insert page break</span></td></tr>
-        <tr data-search="microsoft word shift + enter insert line break "><td><kbd class="combo">Shift + Enter</kbd></td><td><span class="action">Insert line break</span></td></tr>
-        <tr data-search="microsoft word ctrl + k insert hyperlink "><td><kbd class="combo">Ctrl + K</kbd></td><td><span class="action">Insert hyperlink</span></td></tr>
-        <tr data-search="microsoft word ctrl + home go to beginning of document "><td><kbd class="combo">Ctrl + Home</kbd></td><td><span class="action">Go to beginning of document</span></td></tr>
-        <tr data-search="microsoft word ctrl + end go to end of document "><td><kbd class="combo">Ctrl + End</kbd></td><td><span class="action">Go to end of document</span></td></tr>
-        <tr data-search="microsoft word ctrl + left / right move one word left / right "><td><kbd class="combo">Ctrl + Left / Right</kbd></td><td><span class="action">Move one word left / right</span></td></tr>
-        <tr data-search="microsoft word ctrl + up / down move one paragraph up / down "><td><kbd class="combo">Ctrl + Up / Down</kbd></td><td><span class="action">Move one paragraph up / down</span></td></tr>
-        <tr data-search="microsoft word ctrl + shift + left / right select by word "><td><kbd class="combo">Ctrl + Shift + Left / Right</kbd></td><td><span class="action">Select by word</span></td></tr>
-        <tr data-search="microsoft word ctrl + shift + up / down select by paragraph "><td><kbd class="combo">Ctrl + Shift + Up / Down</kbd></td><td><span class="action">Select by paragraph</span></td></tr>
-        <tr data-search="microsoft word ctrl + backspace delete previous word "><td><kbd class="combo">Ctrl + Backspace</kbd></td><td><span class="action">Delete previous word</span></td></tr>
-        <tr data-search="microsoft word ctrl + delete delete next word "><td><kbd class="combo">Ctrl + Delete</kbd></td><td><span class="action">Delete next word</span></td></tr>
-        <tr data-search="microsoft word ctrl + alt + 1 apply heading 1 "><td><kbd class="combo">Ctrl + Alt + 1</kbd></td><td><span class="action">Apply Heading 1</span></td></tr>
-        <tr data-search="microsoft word ctrl + alt + 2 apply heading 2 "><td><kbd class="combo">Ctrl + Alt + 2</kbd></td><td><span class="action">Apply Heading 2</span></td></tr>
-        <tr data-search="microsoft word ctrl + alt + 3 apply heading 3 "><td><kbd class="combo">Ctrl + Alt + 3</kbd></td><td><span class="action">Apply Heading 3</span></td></tr>
-        <tr data-search="microsoft word ctrl + shift + n apply normal style "><td><kbd class="combo">Ctrl + Shift + N</kbd></td><td><span class="action">Apply Normal style</span></td></tr>
-        <tr data-search="microsoft word ctrl + shift + l apply bullet list "><td><kbd class="combo">Ctrl + Shift + L</kbd></td><td><span class="action">Apply bullet list</span></td></tr>
-        <tr data-search="microsoft word ctrl + alt + m insert comment "><td><kbd class="combo">Ctrl + Alt + M</kbd></td><td><span class="action">Insert comment</span></td></tr>
-        <tr data-search="microsoft word ctrl + shift + e toggle track changes "><td><kbd class="combo">Ctrl + Shift + E</kbd></td><td><span class="action">Toggle Track Changes</span></td></tr>
-        <tr data-search="microsoft word f7 spelling and grammar "><td><kbd class="combo">F7</kbd></td><td><span class="action">Spelling and grammar</span></td></tr>
-        <tr data-search="microsoft word shift + f7 thesaurus "><td><kbd class="combo">Shift + F7</kbd></td><td><span class="action">Thesaurus</span></td></tr>
-        <tr data-search="microsoft word ctrl + alt + v paste special "><td><kbd class="combo">Ctrl + Alt + V</kbd></td><td><span class="action">Paste Special</span></td></tr>
-      </tbody></table>
-    </details>
+    // Reading & Writing Files
+    { cat: "Reading & Writing Files", cmd: "Get-Content", alias: "cat, type, gc", example: 'Get-Content .\\log.txt', desc: "Print the contents of a text file." },
+    { cat: "Reading & Writing Files", cmd: "Get-Content -Tail", alias: "", example: 'Get-Content .\\log.txt -Tail 20 -Wait', desc: "Show the last N lines and keep watching for new lines (like tail -f)." },
+    { cat: "Reading & Writing Files", cmd: "Set-Content", alias: "sc", example: 'Set-Content .\\notes.txt "Hello there"', desc: "Overwrite a file's contents with the given text." },
+    { cat: "Reading & Writing Files", cmd: "Add-Content", alias: "ac", example: 'Add-Content .\\notes.txt "Another line"', desc: "Append text to the end of a file." },
+    { cat: "Reading & Writing Files", cmd: "Out-File", alias: "", example: 'Get-Process | Out-File processes.txt', desc: "Send pipeline output to a text file." },
+    { cat: "Reading & Writing Files", cmd: "Get-FileHash", alias: "", example: 'Get-FileHash .\\install.exe -Algorithm SHA256', desc: "Compute a file's checksum for integrity verification." },
 
-    <details class="section" id="foobar2000" open>
-      <summary><span>foobar2000</span><span class="section__count">10 shortcuts</span></summary>
-      <p class="section__note">foobar2000&#x27;s keyboard bindings are deliberately customizable. Treat this section as a local checklist and edit shortcuts.js to match Preferences &gt; Keyboard Shortcuts on your installation.</p>
-      <table class="shortcut-table"><colgroup><col><col></colgroup><thead><tr><th>Shortcut</th><th>Action</th></tr></thead><tbody>
-        <tr data-search="foobar2000 space play / pause "><td><kbd class="combo">Space</kbd></td><td><span class="action">Play / pause</span></td></tr>
-        <tr data-search="foobar2000 ctrl + o open files "><td><kbd class="combo">Ctrl + O</kbd></td><td><span class="action">Open files</span></td></tr>
-        <tr data-search="foobar2000 ctrl + p open preferences "><td><kbd class="combo">Ctrl + P</kbd></td><td><span class="action">Open Preferences</span></td></tr>
-        <tr data-search="foobar2000 ctrl + n create a new playlist "><td><kbd class="combo">Ctrl + N</kbd></td><td><span class="action">Create a new playlist</span></td></tr>
-        <tr data-search="foobar2000 ctrl + f search "><td><kbd class="combo">Ctrl + F</kbd></td><td><span class="action">Search</span></td></tr>
-        <tr data-search="foobar2000 delete remove selected playlist item(s) "><td><kbd class="combo">Delete</kbd></td><td><span class="action">Remove selected playlist item(s)</span></td></tr>
-        <tr data-search="foobar2000 enter play selected item "><td><kbd class="combo">Enter</kbd></td><td><span class="action">Play selected item</span></td></tr>
-        <tr data-search="foobar2000 ctrl + a select all "><td><kbd class="combo">Ctrl + A</kbd></td><td><span class="action">Select all</span></td></tr>
-        <tr data-search="foobar2000 ctrl + s save playlist / current data where applicable "><td><kbd class="combo">Ctrl + S</kbd></td><td><span class="action">Save playlist / current data where applicable</span></td></tr>
-        <tr data-search="foobar2000 f5 refresh where applicable "><td><kbd class="combo">F5</kbd></td><td><span class="action">Refresh where applicable</span></td></tr>
-      </tbody></table>
-    </details>
+    // Searching Files & Text
+    { cat: "Searching Files & Text", cmd: "Select-String", alias: "sls", example: 'Select-String -Path .\\*.log -Pattern "error"', desc: "Search files for lines matching a pattern (case-insensitive by default)." },
+    { cat: "Searching Files & Text", cmd: "Get-ChildItem + Select-String", alias: "", example: 'Get-ChildItem -Recurse -Filter *.cs | Select-String "TODO"', desc: "Search recursively across many files for a piece of text." },
+    { cat: "Searching Files & Text", cmd: "Where-Object", alias: "?, where", example: 'Get-ChildItem | Where-Object Length -gt 1MB', desc: "Filter a list of files (or any objects) by a condition." },
+    { cat: "Searching Files & Text", cmd: "-replace", alias: "", example: '(Get-Content .\\file.txt) -replace "foo","bar" | Set-Content .\\file.txt', desc: "Find-and-replace text in a file's contents." },
 
-    <details class="section" id="tmpgenc-video-mastering-works-7" open>
-      <summary><span>TMPGEnc Video Mastering Works 7</span><span class="section__count">2 shortcuts</span></summary>
-      <p class="section__note">Pegasys&#x27; public web documentation exposes only a subset of TVMW7 hotkeys. Ctrl+Left/Right below are explicitly documented for Source Monitor range navigation; use the app&#x27;s own menus/help to fill in any local or mode-specific bindings.</p>
-      <table class="shortcut-table"><colgroup><col><col></colgroup><thead><tr><th>Shortcut</th><th>Action</th></tr></thead><tbody>
-        <tr data-search="tmpgenc video mastering works 7 ctrl + left previous displayed range source monitor / timeline mode; documented by pegasys"><td><kbd class="combo">Ctrl + Left</kbd></td><td><span class="action">Previous displayed range</span><span class="context">Source Monitor / Timeline mode; documented by Pegasys</span></td></tr>
-        <tr data-search="tmpgenc video mastering works 7 ctrl + right next displayed range source monitor / timeline mode; documented by pegasys"><td><kbd class="combo">Ctrl + Right</kbd></td><td><span class="action">Next displayed range</span><span class="context">Source Monitor / Timeline mode; documented by Pegasys</span></td></tr>
-      </tbody></table>
-    </details>
+    // Archives
+    { cat: "Archives", cmd: "Compress-Archive", alias: "", example: 'Compress-Archive -Path .\\Project\\* -DestinationPath project.zip', desc: "Zip up a folder or set of files." },
+    { cat: "Archives", cmd: "Expand-Archive", alias: "", example: 'Expand-Archive -Path project.zip -DestinationPath .\\Project', desc: "Unzip an archive to a folder." },
 
-    <details class="section" id="windows-terminal-powershell" open>
-      <summary><span>Windows Terminal + PowerShell</span><span class="section__count">22 shortcuts</span></summary>
-      <p class="section__note">Windows Terminal actions and PSReadLine bindings are customizable. These are current Windows defaults documented by Microsoft.</p>
-      <table class="shortcut-table"><colgroup><col><col></colgroup><thead><tr><th>Shortcut</th><th>Action</th></tr></thead><tbody>
-        <tr data-search="windows terminal + powershell ctrl + shift + t open a new terminal tab windows terminal"><td><kbd class="combo">Ctrl + Shift + T</kbd></td><td><span class="action">Open a new terminal tab</span><span class="context">Windows Terminal</span></td></tr>
-        <tr data-search="windows terminal + powershell ctrl + tab switch to the next terminal tab windows terminal"><td><kbd class="combo">Ctrl + Tab</kbd></td><td><span class="action">Switch to the next terminal tab</span><span class="context">Windows Terminal</span></td></tr>
-        <tr data-search="windows terminal + powershell ctrl + shift + c copy selected terminal text windows terminal"><td><kbd class="combo">Ctrl + Shift + C</kbd></td><td><span class="action">Copy selected terminal text</span><span class="context">Windows Terminal</span></td></tr>
-        <tr data-search="windows terminal + powershell ctrl + shift + v paste into the terminal windows terminal"><td><kbd class="combo">Ctrl + Shift + V</kbd></td><td><span class="action">Paste into the terminal</span><span class="context">Windows Terminal</span></td></tr>
-        <tr data-search="windows terminal + powershell ctrl + shift + f search terminal buffer windows terminal"><td><kbd class="combo">Ctrl + Shift + F</kbd></td><td><span class="action">Search terminal buffer</span><span class="context">Windows Terminal</span></td></tr>
-        <tr data-search="windows terminal + powershell ctrl + shift + space open the new-tab dropdown windows terminal"><td><kbd class="combo">Ctrl + Shift + Space</kbd></td><td><span class="action">Open the new-tab dropdown</span><span class="context">Windows Terminal</span></td></tr>
-        <tr data-search="windows terminal + powershell alt + shift + + split pane vertically windows terminal"><td><kbd class="combo">Alt + Shift + +</kbd></td><td><span class="action">Split pane vertically</span><span class="context">Windows Terminal</span></td></tr>
-        <tr data-search="windows terminal + powershell alt + shift + - split pane horizontally windows terminal"><td><kbd class="combo">Alt + Shift + -</kbd></td><td><span class="action">Split pane horizontally</span><span class="context">Windows Terminal</span></td></tr>
-        <tr data-search="windows terminal + powershell alt + f4 close the terminal window windows terminal"><td><kbd class="combo">Alt + F4</kbd></td><td><span class="action">Close the terminal window</span><span class="context">Windows Terminal</span></td></tr>
-        <tr data-search="windows terminal + powershell ctrl + shift + home scroll to the top of the terminal buffer windows terminal"><td><kbd class="combo">Ctrl + Shift + Home</kbd></td><td><span class="action">Scroll to the top of the terminal buffer</span><span class="context">Windows Terminal</span></td></tr>
-        <tr data-search="windows terminal + powershell up arrow previous command powershell / psreadline"><td><kbd class="combo">Up Arrow</kbd></td><td><span class="action">Previous command</span><span class="context">PowerShell / PSReadLine</span></td></tr>
-        <tr data-search="windows terminal + powershell down arrow next command powershell / psreadline"><td><kbd class="combo">Down Arrow</kbd></td><td><span class="action">Next command</span><span class="context">PowerShell / PSReadLine</span></td></tr>
-        <tr data-search="windows terminal + powershell f7 show command history powershell"><td><kbd class="combo">F7</kbd></td><td><span class="action">Show command history</span><span class="context">PowerShell</span></td></tr>
-        <tr data-search="windows terminal + powershell tab complete command, parameter, or path powershell / psreadline"><td><kbd class="combo">Tab</kbd></td><td><span class="action">Complete command, parameter, or path</span><span class="context">PowerShell / PSReadLine</span></td></tr>
-        <tr data-search="windows terminal + powershell ctrl + space show completion menu powershell / psreadline"><td><kbd class="combo">Ctrl + Space</kbd></td><td><span class="action">Show completion menu</span><span class="context">PowerShell / PSReadLine</span></td></tr>
-        <tr data-search="windows terminal + powershell f2 toggle prediction view style powershell / psreadline"><td><kbd class="combo">F2</kbd></td><td><span class="action">Toggle prediction view style</span><span class="context">PowerShell / PSReadLine</span></td></tr>
-        <tr data-search="windows terminal + powershell shift + enter add a continuation line powershell / psreadline"><td><kbd class="combo">Shift + Enter</kbd></td><td><span class="action">Add a continuation line</span><span class="context">PowerShell / PSReadLine</span></td></tr>
-        <tr data-search="windows terminal + powershell ctrl + left / right move by word powershell / psreadline"><td><kbd class="combo">Ctrl + Left / Right</kbd></td><td><span class="action">Move by word</span><span class="context">PowerShell / PSReadLine</span></td></tr>
-        <tr data-search="windows terminal + powershell home / end move to start / end of line powershell / psreadline"><td><kbd class="combo">Home / End</kbd></td><td><span class="action">Move to start / end of line</span><span class="context">PowerShell / PSReadLine</span></td></tr>
-        <tr data-search="windows terminal + powershell ctrl + home delete from cursor to beginning of line(s) powershell / psreadline"><td><kbd class="combo">Ctrl + Home</kbd></td><td><span class="action">Delete from cursor to beginning of line(s)</span><span class="context">PowerShell / PSReadLine</span></td></tr>
-        <tr data-search="windows terminal + powershell ctrl + end delete from cursor to end of line(s) powershell / psreadline"><td><kbd class="combo">Ctrl + End</kbd></td><td><span class="action">Delete from cursor to end of line(s)</span><span class="context">PowerShell / PSReadLine</span></td></tr>
-        <tr data-search="windows terminal + powershell insert toggle insert / overwrite mode powershell / psreadline"><td><kbd class="combo">Insert</kbd></td><td><span class="action">Toggle insert / overwrite mode</span><span class="context">PowerShell / PSReadLine</span></td></tr>
-      </tbody></table>
-    </details>
+    // System Information
+    { cat: "System Information", cmd: "Get-ComputerInfo", alias: "", example: "Get-ComputerInfo", desc: "Dump a large, detailed report of OS, BIOS, and hardware info." },
+    { cat: "System Information", cmd: "Get-ComputerInfo (filtered)", alias: "", example: 'Get-ComputerInfo | Select-Object OsName, OsVersion, CsSystemType', desc: "Pull just the fields you care about from Get-ComputerInfo." },
+    { cat: "System Information", cmd: "systeminfo", alias: "", example: "systeminfo", desc: "Classic (non-PowerShell) system summary; still handy and fast." },
+    { cat: "System Information", cmd: "$PSVersionTable", alias: "", example: "$PSVersionTable", desc: "Show the installed PowerShell version and edition." },
+    { cat: "System Information", cmd: "Get-CimInstance Win32_OperatingSystem", alias: "", example: "Get-CimInstance Win32_OperatingSystem", desc: "OS name, version, build, install date, and more." },
+    { cat: "System Information", cmd: "Get-CimInstance Win32_ComputerSystem", alias: "", example: "Get-CimInstance Win32_ComputerSystem", desc: "Manufacturer, model, and total physical memory." },
+    { cat: "System Information", cmd: "Get-CimInstance Win32_BIOS", alias: "", example: "Get-CimInstance Win32_BIOS", desc: "BIOS/firmware version and serial number." },
+    { cat: "System Information", cmd: "Get-CimInstance Win32_Processor", alias: "", example: "Get-CimInstance Win32_Processor", desc: "CPU name, core count, and clock speed." },
+    { cat: "System Information", cmd: "Get-HotFix", alias: "", example: "Get-HotFix", desc: "List installed Windows updates (KB patches)." },
+    { cat: "System Information", cmd: "Get-Date", alias: "", example: 'Get-Date -Format "yyyy-MM-dd HH:mm:ss"', desc: "Show the current date and time, optionally formatted." },
 
-    <details class="section" id="common-text-editing" open>
-      <summary><span>Common Text Editing</span><span class="section__count">18 shortcuts</span></summary>
-      <table class="shortcut-table"><colgroup><col><col></colgroup><thead><tr><th>Shortcut</th><th>Action</th></tr></thead><tbody>
-        <tr data-search="common text editing ctrl + a select all "><td><kbd class="combo">Ctrl + A</kbd></td><td><span class="action">Select all</span></td></tr>
-        <tr data-search="common text editing ctrl + c / ctrl + insert copy selection "><td><kbd class="combo">Ctrl + C / Ctrl + Insert</kbd></td><td><span class="action">Copy selection</span></td></tr>
-        <tr data-search="common text editing ctrl + x cut selection "><td><kbd class="combo">Ctrl + X</kbd></td><td><span class="action">Cut selection</span></td></tr>
-        <tr data-search="common text editing ctrl + v / shift + insert paste "><td><kbd class="combo">Ctrl + V / Shift + Insert</kbd></td><td><span class="action">Paste</span></td></tr>
-        <tr data-search="common text editing ctrl + z undo "><td><kbd class="combo">Ctrl + Z</kbd></td><td><span class="action">Undo</span></td></tr>
-        <tr data-search="common text editing ctrl + y redo "><td><kbd class="combo">Ctrl + Y</kbd></td><td><span class="action">Redo</span></td></tr>
-        <tr data-search="common text editing ctrl + left / right move by word "><td><kbd class="combo">Ctrl + Left / Right</kbd></td><td><span class="action">Move by word</span></td></tr>
-        <tr data-search="common text editing ctrl + up / down move by paragraph "><td><kbd class="combo">Ctrl + Up / Down</kbd></td><td><span class="action">Move by paragraph</span></td></tr>
-        <tr data-search="common text editing ctrl + shift + left / right select by word "><td><kbd class="combo">Ctrl + Shift + Left / Right</kbd></td><td><span class="action">Select by word</span></td></tr>
-        <tr data-search="common text editing shift + home / end select to beginning / end of line "><td><kbd class="combo">Shift + Home / End</kbd></td><td><span class="action">Select to beginning / end of line</span></td></tr>
-        <tr data-search="common text editing ctrl + home / end move to beginning / end of document "><td><kbd class="combo">Ctrl + Home / End</kbd></td><td><span class="action">Move to beginning / end of document</span></td></tr>
-        <tr data-search="common text editing ctrl + shift + home / end select to beginning / end of document "><td><kbd class="combo">Ctrl + Shift + Home / End</kbd></td><td><span class="action">Select to beginning / end of document</span></td></tr>
-        <tr data-search="common text editing ctrl + backspace delete previous word "><td><kbd class="combo">Ctrl + Backspace</kbd></td><td><span class="action">Delete previous word</span></td></tr>
-        <tr data-search="common text editing ctrl + delete delete next word "><td><kbd class="combo">Ctrl + Delete</kbd></td><td><span class="action">Delete next word</span></td></tr>
-        <tr data-search="common text editing home / end move to beginning / end of line "><td><kbd class="combo">Home / End</kbd></td><td><span class="action">Move to beginning / end of line</span></td></tr>
-        <tr data-search="common text editing page up / page down move one screen up / down "><td><kbd class="combo">Page Up / Page Down</kbd></td><td><span class="action">Move one screen up / down</span></td></tr>
-        <tr data-search="common text editing shift + arrow extend selection by one character / line "><td><kbd class="combo">Shift + Arrow</kbd></td><td><span class="action">Extend selection by one character / line</span></td></tr>
-        <tr data-search="common text editing ctrl + shift + arrow extend selection by word / paragraph "><td><kbd class="combo">Ctrl + Shift + Arrow</kbd></td><td><span class="action">Extend selection by word / paragraph</span></td></tr>
-      </tbody></table>
-    </details>
-  </main>
-  
-  <div id="noResults" class="no-results" hidden>No matching shortcuts.</div>
-  
-  <footer class="footer">
-    <span id="totalCount">383 shortcuts across 12 sections</span><span class="footer__sep">·</span><span>Local editable reference</span>
-  </footer>
-  
-  <script is:inline>
-    (() => {
-      const search = document.getElementById('search');
-      const sections = [...document.querySelectorAll('.section')];
-      const noResults = document.getElementById('noResults');
-      const totalCount = document.getElementById('totalCount');
-      const totalSections = sections.length;
-      const totalRows = document.querySelectorAll('.shortcut-table tbody tr').length;
+    // Processes & Services
+    { cat: "Processes & Services", cmd: "Get-Process", alias: "ps, gps", example: "Get-Process", desc: "List all running processes." },
+    { cat: "Processes & Services", cmd: "Get-Process (by name)", alias: "", example: 'Get-Process -Name chrome', desc: "List running processes matching a name." },
+    { cat: "Processes & Services", cmd: "Stop-Process", alias: "kill, spps", example: 'Stop-Process -Name chrome -Force', desc: "Force-terminate a process by name or ID." },
+    { cat: "Processes & Services", cmd: "Get-Service", alias: "gsv", example: "Get-Service", desc: "List all Windows services and their status." },
+    { cat: "Processes & Services", cmd: "Get-Service (by name)", alias: "", example: 'Get-Service -Name Spooler', desc: "Show the status of a specific service." },
+    { cat: "Processes & Services", cmd: "Start-Service", alias: "sasv", example: 'Start-Service -Name Spooler', desc: "Start a stopped service." },
+    { cat: "Processes & Services", cmd: "Stop-Service", alias: "spsv", example: 'Stop-Service -Name Spooler', desc: "Stop a running service." },
+    { cat: "Processes & Services", cmd: "Restart-Service", alias: "", example: 'Restart-Service -Name Spooler', desc: "Restart a service." },
 
-      function filter() {
-        const q = search.value.toLowerCase().trim();
-        let visibleRows = 0, visibleSections = 0;
-        for (const section of sections) {
-          let sectionRows = 0;
-          const title = section.querySelector('summary span').textContent.toLowerCase();
-          for (const row of section.querySelectorAll('tbody tr')) {
-            const show = !q || row.dataset.search.includes(q) || title.includes(q);
-            row.hidden = !show;
-            if (show) sectionRows++;
-          }
-          section.hidden = sectionRows === 0;
-          if (sectionRows) {
-            visibleSections++;
-            visibleRows += sectionRows;
-            section.querySelector('.section__count').textContent = `${sectionRows} shortcut${sectionRows === 1 ? '' : 's'}`;
-            if (q) section.open = true;
-          }
-        }
-        noResults.hidden = visibleRows !== 0;
-        totalCount.textContent = q ? `${visibleRows} matches across ${visibleSections} sections` : `${totalRows} shortcuts across ${totalSections} sections`;
-      }
+    // Networking
+    { cat: "Networking", cmd: "Test-Connection", alias: "", example: 'Test-Connection google.com', desc: "Ping a host to check connectivity and latency. (Native equivalent: ping.)" },
+    { cat: "Networking", cmd: "Test-NetConnection", alias: "tnc", example: 'Test-NetConnection google.com -Port 443', desc: "Test reachability of a host on a specific port." },
+    { cat: "Networking", cmd: "ipconfig", alias: "", example: "ipconfig /all", desc: "Show detailed IP configuration for all network adapters." },
+    { cat: "Networking", cmd: "Get-NetIPAddress", alias: "", example: "Get-NetIPAddress -AddressFamily IPv4", desc: "List IPv4 addresses assigned to this machine." },
+    { cat: "Networking", cmd: "Get-NetAdapter", alias: "", example: "Get-NetAdapter", desc: "List network adapters and their link status." },
+    { cat: "Networking", cmd: "Resolve-DnsName", alias: "", example: "Resolve-DnsName example.com", desc: "Look up DNS records for a hostname. (Native equivalent: nslookup.)" },
+    { cat: "Networking", cmd: "Get-NetTCPConnection", alias: "", example: "Get-NetTCPConnection -State Listen", desc: "List active TCP connections and listening ports. (Native equivalent: netstat.)" },
+    { cat: "Networking", cmd: "Invoke-WebRequest", alias: "iwr", example: 'Invoke-WebRequest -Uri https://example.com -OutFile page.html', desc: "Download a file or fetch a web page from the command line. (Not curl/wget — those aliases were removed in PowerShell 7 to avoid shadowing the real curl.exe/wget.exe.)" },
 
-      search.addEventListener('input', filter);
-      document.getElementById('collapseAll').addEventListener('click', () => sections.forEach(s => s.open = false));
-      document.getElementById('expandAll').addEventListener('click', () => sections.forEach(s => s.open = true));
-    })();
-  </script>
+    // Software & Packages
+    { cat: "Software & Packages", cmd: "winget list", alias: "", example: "winget list", desc: "List installed applications known to the Windows Package Manager." },
+    { cat: "Software & Packages", cmd: "winget search", alias: "", example: 'winget search "vscode"', desc: "Search for an application in configured package sources." },
+    { cat: "Software & Packages", cmd: "winget install", alias: "", example: "winget install Microsoft.VisualStudioCode", desc: "Install an application by its package ID." },
+    { cat: "Software & Packages", cmd: "winget upgrade", alias: "", example: "winget upgrade --all", desc: "Upgrade every installed package that has an available update." },
+    { cat: "Software & Packages", cmd: "Get-Package", alias: "", example: "Get-Package", desc: "List software packages registered with PowerShell's package management." },
+
+    // Environment & Variables
+    { cat: "Environment & Variables", cmd: "Get-ChildItem Env:", alias: "", example: "Get-ChildItem Env:", desc: "List all environment variables." },
+    { cat: "Environment & Variables", cmd: "$env:VarName", alias: "", example: '$env:PATH -split ";"', desc: "Read an environment variable (here, split PATH into individual entries)." },
+    { cat: "Environment & Variables", cmd: "Set variable (session)", alias: "", example: '$env:MY_VAR = "value"', desc: "Set an environment variable for the current PowerShell session only." },
+    { cat: "Environment & Variables", cmd: "Set variable (permanent)", alias: "", example: '[Environment]::SetEnvironmentVariable("MY_VAR","value","User")', desc: "Set a persistent environment variable for the current user." },
+    { cat: "Environment & Variables", cmd: "$PROFILE", alias: "", example: "notepad $PROFILE", desc: "Open your PowerShell profile script (runs on every new session)." },
+
+    // Users & Permissions
+    { cat: "Users & Permissions", cmd: "whoami", alias: "", example: "whoami", desc: "Show the currently logged-in user." },
+    { cat: "Users & Permissions", cmd: "whoami /groups", alias: "", example: "whoami /groups", desc: "Show the groups and privileges of the current user." },
+    { cat: "Users & Permissions", cmd: "Get-LocalUser", alias: "", example: "Get-LocalUser", desc: "List local user accounts on this machine." },
+    { cat: "Users & Permissions", cmd: "Get-LocalGroupMember", alias: "", example: "Get-LocalGroupMember -Group Administrators", desc: "List members of a local group, e.g. Administrators." },
+    { cat: "Users & Permissions", cmd: "icacls", alias: "", example: 'icacls "C:\\Data" /grant Ian:F', desc: "View or change file/folder permissions (ACLs)." },
+
+    // Disk & Storage
+    { cat: "Disk & Storage", cmd: "Get-PSDrive", alias: "", example: "Get-PSDrive -PSProvider FileSystem", desc: "List drives with free/used space." },
+    { cat: "Disk & Storage", cmd: "Get-Volume", alias: "", example: "Get-Volume", desc: "List volumes with size, free space, and file system type." },
+    { cat: "Disk & Storage", cmd: "Folder size", alias: "", example: "Get-ChildItem -Recurse | Measure-Object -Property Length -Sum", desc: "Add up the total size of everything in the current folder tree." },
+    { cat: "Disk & Storage", cmd: "Largest files", alias: "", example: "Get-ChildItem -File -Recurse | Sort-Object Length -Descending | Select-Object -First 10", desc: "Find the 10 largest files under the current folder." },
+
+    // Scheduled Tasks & Startup
+    { cat: "Scheduled Tasks & Startup", cmd: "Get-ScheduledTask", alias: "", example: "Get-ScheduledTask | Where-Object State -eq Ready", desc: "List scheduled tasks (optionally filtered by state)." },
+    { cat: "Scheduled Tasks & Startup", cmd: "Start-ScheduledTask", alias: "", example: 'Start-ScheduledTask -TaskName "Backup"', desc: "Manually run a scheduled task now." },
+    { cat: "Scheduled Tasks & Startup", cmd: "Startup programs", alias: "", example: "Get-CimInstance Win32_StartupCommand", desc: "List programs configured to launch at sign-in." },
+
+    // Clipboard
+    { cat: "Clipboard", cmd: "Get-Clipboard", alias: "", example: "Get-Clipboard", desc: "Print whatever is currently on the clipboard." },
+    { cat: "Clipboard", cmd: "Set-Clipboard", alias: "", example: 'Set-Clipboard "Text to copy"', desc: "Copy text (or command output) to the clipboard." },
+
+    // Pipeline & Data
+    { cat: "Pipeline & Data", cmd: "Write-Output", alias: "echo, write", example: 'Write-Output "Hello there"', desc: "Send an object down the pipeline (usually printed to the console)." },
+    { cat: "Pipeline & Data", cmd: "Select-Object", alias: "select", example: 'Get-Process | Select-Object Name, Id, CPU', desc: "Pick specific properties (columns) from a set of objects." },
+    { cat: "Pipeline & Data", cmd: "Where-Object", alias: "where, ?", example: 'Get-Process | Where-Object CPU -gt 100', desc: "Filter a list of objects by a condition." },
+    { cat: "Pipeline & Data", cmd: "Sort-Object", alias: "sort", example: 'Get-Process | Sort-Object CPU -Descending', desc: "Sort a list of objects by one or more properties." },
+    { cat: "Pipeline & Data", cmd: "Group-Object", alias: "group", example: 'Get-Process | Group-Object Company', desc: "Group objects by a shared property value." },
+    { cat: "Pipeline & Data", cmd: "Measure-Object", alias: "measure", example: 'Get-Process | Measure-Object CPU -Sum -Average', desc: "Compute count, sum, average, min, or max over a set of objects." },
+    { cat: "Pipeline & Data", cmd: "ForEach-Object", alias: "%, foreach", example: 'Get-ChildItem | ForEach-Object { $_.Name.ToUpper() }', desc: "Run a script block once for each object in the pipeline." },
+    { cat: "Pipeline & Data", cmd: "Export-Csv", alias: "", example: 'Get-Process | Export-Csv processes.csv -NoTypeInformation', desc: "Save pipeline output as a CSV file." },
+    { cat: "Pipeline & Data", cmd: "Import-Csv", alias: "", example: "Import-Csv data.csv", desc: "Read a CSV file back into objects." },
+    { cat: "Pipeline & Data", cmd: "ConvertTo-Json", alias: "", example: 'Get-Process | Select-Object -First 3 | ConvertTo-Json', desc: "Convert objects to JSON text." },
+    { cat: "Pipeline & Data", cmd: "Out-GridView", alias: "ogv", example: "Get-Process | Out-GridView", desc: "Open a sortable, filterable pop-up grid of the results (Windows only)." },
+
+    // Help & Discovery
+    { cat: "Help & Discovery", cmd: "Get-Command", alias: "gcm", example: 'Get-Command *service*', desc: "Find cmdlets whose name matches a pattern." },
+    { cat: "Help & Discovery", cmd: "Get-Help", alias: "help, man", example: 'Get-Help Get-Process -Examples', desc: "Show usage and examples for a cmdlet." },
+    { cat: "Help & Discovery", cmd: "Get-Help -Full", alias: "", example: "Get-Help Get-Process -Full", desc: "Show the complete help page, including every parameter." },
+    { cat: "Help & Discovery", cmd: "Get-Member", alias: "gm", example: "Get-Process | Get-Member", desc: "List the properties and methods of whatever objects come through the pipeline." },
+    { cat: "Help & Discovery", cmd: "Get-Alias", alias: "gal", example: "Get-Alias gci", desc: "Look up which cmdlet an alias points to." },
+    { cat: "Help & Discovery", cmd: "Update-Help", alias: "", example: "Update-Help", desc: "Download the latest local help files (run once as admin)." },
+
+    // Session & History
+    { cat: "Session & History", cmd: "Get-History", alias: "h, history", example: "Get-History", desc: "Show commands run earlier in this session." },
+    { cat: "Session & History", cmd: "Clear-Host", alias: "cls, clear", example: "Clear-Host", desc: "Clear the terminal screen." },
+    { cat: "Session & History", cmd: "exit", alias: "", example: "exit", desc: "Close the current PowerShell session." },
+  ];
+
+  // Derived from data[].alias so the cheat sheet can never drift out of sync with
+  // the per-command Alias column above (each entry lists only real PowerShell aliases).
+  function baseCmdName(cmd) {
+    return cmd.split(/\s+(?=[-(])/)[0];
+  }
+
+  const aliasCheatSheet = (() => {
+    const seen = new Set();
+    const pairs = [];
+    data.forEach(d => {
+      if (!d.alias) return;
+      const target = baseCmdName(d.cmd);
+      d.alias.split(",").map(a => a.trim()).filter(Boolean).forEach(alias => {
+        const key = `${alias}|${target}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        pairs.push([alias, target]);
+      });
+    });
+    return pairs.sort((a, b) => a[0].localeCompare(b[0]));
+  })();
+
+  const categories = [...new Set(data.map(d => d.cat))];
+
+  const chipsEl = document.getElementById("chips");
+  const mainEl = document.getElementById("main");
+  const searchEl = document.getElementById("search");
+  const emptyEl = document.getElementById("empty-state");
+  let activeCategory = "All";
+
+  function makeChip(label) {
+    const btn = document.createElement("button");
+    btn.className = "chip" + (label === activeCategory ? " active" : "");
+    btn.textContent = label;
+    btn.addEventListener("click", () => {
+      activeCategory = label;
+      render();
+    });
+    return btn;
+  }
+
+  function renderChips() {
+    chipsEl.innerHTML = "";
+    chipsEl.appendChild(makeChip("All"));
+    categories.forEach(cat => chipsEl.appendChild(makeChip(cat)));
+    chipsEl.appendChild(makeChip("Aliases Cheat Sheet"));
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+  }
+
+  function matchesSearch(item, term) {
+    if (!term) return true;
+    const haystack = `${item.cmd} ${item.alias} ${item.example} ${item.desc}`.toLowerCase();
+    return haystack.includes(term);
+  }
+
+  function renderAliasTable() {
+    const rows = aliasCheatSheet
+      .filter(([a, b]) => {
+        const term = searchEl.value.trim().toLowerCase();
+        if (!term) return true;
+        return `${a} ${b}`.toLowerCase().includes(term);
+      })
+      .map(([a, b]) => `
+        <tr>
+          <td class="cmd">${escapeHtml(a)}</td>
+          <td class="desc">${escapeHtml(b)}</td>
+        </tr>
+      `).join("");
+
+    return `
+      <section class="category">
+        <h2>Aliases Cheat Sheet <span class="count">${aliasCheatSheet.length} shortcuts</span></h2>
+        <p id="alias-note">Familiar cmd/bash-style shortcuts and the real PowerShell cmdlet behind each one.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Shortcut</th><th>Actual cmdlet</th></tr></thead>
+            <tbody>${rows || ""}</tbody>
+          </table>
+        </div>
+      </section>
+    `;
+  }
+
+  function copyText(text, btn) {
+    navigator.clipboard?.writeText(text).then(() => {
+      btn.textContent = "Copied";
+      btn.classList.add("copied");
+      setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1200);
+    });
+  }
+
+  function render() {
+    const term = searchEl.value.trim().toLowerCase();
+    renderChips();
+
+    if (activeCategory === "Aliases Cheat Sheet") {
+      mainEl.innerHTML = renderAliasTable();
+      emptyEl.hidden = true;
+      attachCopyHandlers();
+      updateStickyOffsets();
+      return;
+    }
+
+    const groups = categories
+      .filter(cat => activeCategory === "All" || activeCategory === cat)
+      .map(cat => ({
+        cat,
+        rows: data.filter(d => d.cat === cat && matchesSearch(d, term))
+      }))
+      .filter(g => g.rows.length > 0);
+
+    if (groups.length === 0) {
+      mainEl.innerHTML = "";
+      emptyEl.hidden = false;
+      updateStickyOffsets();
+      return;
+    }
+    emptyEl.hidden = true;
+
+    mainEl.innerHTML = `
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Command</th><th>Alias</th><th>Example</th><th>What it does</th></tr>
+          </thead>
+          ${groups.map(g => `
+            <tbody>
+              <tr class="category-header">
+                <td colspan="4">
+                  <h2>${escapeHtml(g.cat)} <span class="count">${g.rows.length} command${g.rows.length === 1 ? "" : "s"}</span></h2>
+                </td>
+              </tr>
+              ${g.rows.map(r => `
+                <tr>
+                  <td class="cmd">${escapeHtml(r.cmd)}</td>
+                  <td class="alias">${escapeHtml(r.alias)}</td>
+                  <td class="example">
+                    <div class="example-row">
+                      <code>${escapeHtml(r.example)}</code>
+                      <button class="copy-btn" type="button" data-text="${escapeHtml(r.example)}">Copy</button>
+                    </div>
+                  </td>
+                  <td class="desc">${escapeHtml(r.desc)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          `).join("")}
+        </table>
+      </div>
+    `;
+
+    attachCopyHandlers();
+    updateStickyOffsets();
+  }
+
+  function attachCopyHandlers() {
+    mainEl.querySelectorAll(".copy-btn").forEach(btn => {
+      btn.addEventListener("click", () => copyText(btn.dataset.text, btn));
+    });
+  }
+
+  const topHeaderEl = document.getElementById("top-header");
+
+  function updateStickyOffsets() {
+    document.documentElement.style.setProperty("--header-h", `${topHeaderEl.offsetHeight}px`);
+  }
+
+  let resizeTimer;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(updateStickyOffsets, 100);
+  });
+
+  searchEl.addEventListener("input", render);
+  document.getElementById("clear-search").addEventListener("click", () => {
+    searchEl.value = "";
+    searchEl.focus();
+    render();
+  });
+
+  // Theme toggle
+  const stored = localStorage.getItem("ps-ref-theme");
+  if (stored) document.documentElement.dataset.theme = stored;
+  document.getElementById("theme-toggle").addEventListener("click", () => {
+    const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+    const current = document.documentElement.dataset.theme || (prefersDark ? "dark" : "light");
+    const next = current === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem("ps-ref-theme", next);
+  });
+
+  render();
+})();
+</script>
 </body>
 </html>
